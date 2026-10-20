@@ -35,3 +35,14 @@ targets:
         PRODUCT_NAME: SeltosBrowser
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+
+  SeltosBrowserTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SeltosBrowserTests
+    dependencies:
+      - target: SeltosBrowser
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.seltos.browser.tests
