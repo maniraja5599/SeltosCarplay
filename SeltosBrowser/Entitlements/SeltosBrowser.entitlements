@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- CarPlay Audio Entitlement (Permits CPListTemplate, CPTabBarTemplate, CPNowPlayingTemplate) -->
+	<key>com.apple.developer.carplay-audio</key>
+	<true/>
+
+	<!-- 
+		CarPlay Video Entitlement (Restricted Entitlement):
+		To enable CarPlay Video, Apple Developer Relations approval is required.
+		Uncommenting without provisioning approval will cause Xcode codesign / installation rejection.
+	-->
+	<!--
+	<key>com.apple.developer.carplay-video</key>
+	<true/>
+	-->
+</dict>
+</plist>

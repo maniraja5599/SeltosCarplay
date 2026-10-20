@@ -1,0 +1,37 @@
+name: SeltosBrowser
+options:
+  bundleIdPrefix: com.private
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "15.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1" # iPhone
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_BITCODE: NO
+
+targets:
+  SeltosBrowser:
+    type: application
+    platform: iOS
+    sources:
+      - path: SeltosBrowser
+    info:
+      path: SeltosBrowser/App/Info.plist
+    entitlements:
+      path: SeltosBrowser/Entitlements/SeltosBrowser.entitlements
+    frameworks:
+      - framework: WebKit.framework
+      - framework: CarPlay.framework
+      - framework: AVFoundation.framework
+      - framework: MediaPlayer.framework
+      - framework: CoreLocation.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.seltos.browser
+        PRODUCT_NAME: SeltosBrowser
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
