@@ -1,0 +1,62 @@
+name: iOS Build & Test Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build & Test on macOS Runner
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode Version
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Verify Environment & Tools
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode Project
+        run: xcodegen generate
+
+      - name: Run Unit Tests on iOS Simulator
+        run: |
+          xcodebuild test \
+            -project SeltosBrowser.xcodeproj \
+            -scheme SeltosBrowser \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+            -enableCodeCoverage YES \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Build Application Bundle (Archive Check)
+        run: |
+          xcodebuild build \
+            -project SeltosBrowser.xcodeproj \
+            -scheme SeltosBrowser \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package App Artifact
+        run: |
+          mkdir -p build-output
+          cp -R build/Release-iphoneos/SeltosBrowser.app build-output/ || true
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SeltosBrowser-App-Bundle
+          path: build-output/
+          if-no-files-found: ignore
