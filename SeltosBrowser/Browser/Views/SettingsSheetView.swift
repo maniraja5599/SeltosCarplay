@@ -21,10 +21,11 @@ public struct SettingsSheetView: View {
                 }
 
                 // Web Capabilities & Security
-                Section(header: Text("Security & Navigation")) {
+                Section(header: Text("Security & Privacy")) {
                     Toggle("Enforce HTTPS Only", isOn: $viewModel.settingsManager.enforceHTTPSOnly)
-                    Toggle("Request Desktop Sites", isOn: $viewModel.settingsManager.requestDesktopSites)
+                    Toggle("Block Intrusive Ads & Trackers", isOn: $viewModel.settingsManager.blockAdsAndTrackers)
                     Toggle("Block Popups", isOn: $viewModel.settingsManager.blockPopups)
+                    Toggle("Request Desktop Sites", isOn: $viewModel.settingsManager.requestDesktopSites)
                 }
 
                 // Media & Playback

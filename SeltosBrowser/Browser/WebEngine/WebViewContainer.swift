@@ -29,6 +29,12 @@ public struct WebViewContainer: UIViewRepresentable {
         configuration.userContentController.addUserScript(userScript)
         configuration.userContentController.add(context.coordinator, name: "mediaBridge")
 
+        // Apply content blocking rules (ad & tracker filters)
+        ContentBlockerManager.shared.apply(
+            to: configuration.userContentController,
+            enabled: viewModel.settingsManager.blockAdsAndTrackers
+        )
+
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.allowsBackForwardNavigationGestures = true
         webView.scrollView.contentInsetAdjustmentBehavior = .automatic

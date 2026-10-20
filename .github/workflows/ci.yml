@@ -1,4 +1,4 @@
-name: iOS Build & Test Pipeline
+name: iOS Build & Package Pipeline
 
 on:
   push:
@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
-    name: Build & Test on macOS Runner
+  build-and-package:
+    name: Build, Test & Package IPA (macOS)
     runs-on: macos-14
 
     steps:
@@ -34,29 +34,42 @@ jobs:
         run: |
           xcodebuild test \
             -project SeltosBrowser.xcodeproj \
-            -scheme SeltosBrowser \
+            -scheme SeltosBrowserTests \
             -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
             -enableCodeCoverage YES \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Build Application Bundle (Archive Check)
+      - name: Build Application for Device
         run: |
           xcodebuild build \
             -project SeltosBrowser.xcodeproj \
             -scheme SeltosBrowser \
+            -configuration Release \
             -destination 'generic/platform=iOS' \
+            -derivedDataPath derived_data \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Package App Artifact
+      - name: Package Unsigned IPA for Sideloading
         run: |
-          mkdir -p build-output
-          cp -R build/Release-iphoneos/SeltosBrowser.app build-output/ || true
+          mkdir -p build-output/Payload
+          APP_PATH=$(find derived_data -name "SeltosBrowser.app" -type d | head -n 1)
+          if [ -n "$APP_PATH" ]; then
+            cp -R "$APP_PATH" build-output/Payload/
+            cd build-output
+            zip -r -9 SeltosBrowser.ipa Payload
+            rm -rf Payload
+            cd ..
+            echo "Successfully generated SeltosBrowser.ipa"
+          else
+            echo "Error: SeltosBrowser.app not found in build products"
+            exit 1
+          fi
 
-      - name: Upload Build Artifact
+      - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SeltosBrowser-App-Bundle
-          path: build-output/
-          if-no-files-found: ignore
+          name: SeltosBrowser-IPA
+          path: build-output/SeltosBrowser.ipa
+          if-no-files-found: error

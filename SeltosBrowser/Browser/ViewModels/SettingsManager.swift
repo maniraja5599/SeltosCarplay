@@ -29,6 +29,12 @@ public final class SettingsManager: ObservableObject {
         }
     }
 
+    @Published public var blockAdsAndTrackers: Bool {
+        didSet {
+            UserDefaults.standard.set(blockAdsAndTrackers, forKey: Keys.blockAdsAndTrackers)
+        }
+    }
+
     @Published public var allowInlineMediaPlayback: Bool {
         didSet {
             UserDefaults.standard.set(allowInlineMediaPlayback, forKey: Keys.allowInlineMediaPlayback)
@@ -40,6 +46,7 @@ public final class SettingsManager: ObservableObject {
         static let enforceHTTPSOnly = "seltos_pref_enforce_https"
         static let requestDesktopSites = "seltos_pref_desktop_sites"
         static let blockPopups = "seltos_pref_block_popups"
+        static let blockAdsAndTrackers = "seltos_pref_block_ads"
         static let allowInlineMediaPlayback = "seltos_pref_inline_media"
     }
 
@@ -49,6 +56,7 @@ public final class SettingsManager: ObservableObject {
         self.enforceHTTPSOnly = UserDefaults.standard.object(forKey: Keys.enforceHTTPSOnly) as? Bool ?? true
         self.requestDesktopSites = UserDefaults.standard.bool(forKey: Keys.requestDesktopSites)
         self.blockPopups = UserDefaults.standard.object(forKey: Keys.blockPopups) as? Bool ?? true
+        self.blockAdsAndTrackers = UserDefaults.standard.object(forKey: Keys.blockAdsAndTrackers) as? Bool ?? true
         self.allowInlineMediaPlayback = UserDefaults.standard.object(forKey: Keys.allowInlineMediaPlayback) as? Bool ?? true
     }
 
@@ -57,6 +65,7 @@ public final class SettingsManager: ObservableObject {
         enforceHTTPSOnly = true
         requestDesktopSites = false
         blockPopups = true
+        blockAdsAndTrackers = true
         allowInlineMediaPlayback = true
     }
 }
