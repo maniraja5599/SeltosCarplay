@@ -19,11 +19,6 @@ jobs:
       - name: Select Xcode Version
         run: sudo xcode-select -s /Applications/Xcode_15.4.app
 
-      - name: Verify Environment & Tools
-        run: |
-          xcodebuild -version
-          swift --version
-
       - name: Install XcodeGen
         run: brew install xcodegen
 
@@ -31,9 +26,10 @@ jobs:
         run: xcodegen generate
 
       - name: Build Application for iOS Device
+        id: build_step
         run: |
           set -o pipefail
-          xcodebuild build \
+          xcodebuild clean build \
             -project SeltosBrowser.xcodeproj \
             -scheme SeltosBrowser \
             -configuration Release \
@@ -44,15 +40,24 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGN_ENTITLEMENTS="" \
-            2>&1 | tee build.log || {
-              echo "=== BUILD FAILED. ERRORS DETECTED: ==="
-              grep -C 2 -E "error:" build.log || true
-              echo "=== LAST 60 LINES OF BUILD LOG: ==="
-              tail -n 60 build.log
-              exit 1
-            }
+            2>&1 | tee build.log
+
+      - name: Post-Build Diagnostics to Summary
+        if: always()
+        run: |
+          echo "### Xcodebuild Log Summary" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          if [ -f build.log ]; then
+            grep -C 3 -E "(error:|fatal error:|BUILD FAILED|\*\*)" build.log | head -n 100 >> $GITHUB_STEP_SUMMARY || true
+            echo "--- Last 50 lines ---" >> $GITHUB_STEP_SUMMARY
+            tail -n 50 build.log >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No build.log file found." >> $GITHUB_STEP_SUMMARY
+          fi
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Package Unsigned IPA for Sideloading
+        if: success()
         run: |
           mkdir -p build-output/Payload
           APP_PATH=$(find derived_data -name "SeltosBrowser.app" -type d | head -n 1)
@@ -71,6 +76,7 @@ jobs:
           fi
 
       - name: Upload IPA Artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: SeltosBrowser-IPA
