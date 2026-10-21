@@ -62,7 +62,7 @@ public struct SettingsSheetView: View {
                     HStack {
                         Text("Application")
                         Spacer()
-                        Text("Seltos Private Browser")
+                        Text("Kia Browser")
                             .foregroundColor(.secondary)
                     }
                     HStack {

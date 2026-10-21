@@ -17,8 +17,8 @@ public struct HomeFavoritesView: View {
                         .font(.system(size: 44))
                         .foregroundColor(.accentColor)
 
-                    Text("Kia Seltos Private Browser")
-                        .font(.headline)
+                    Text("Kia Browser")
+                        .font(.title2)
                         .fontWeight(.bold)
 
                     Text("Secure browsing with CarPlay media integration")
