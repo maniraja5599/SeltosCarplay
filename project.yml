@@ -15,8 +15,7 @@ settings:
     CODE_SIGNING_REQUIRED: NO
     CODE_SIGN_IDENTITY: ""
     ENABLE_BITCODE: NO
-    INFOPLIST_KEY_UILaunchStoryboardName: "LaunchScreen"
-    INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
+    GENERATE_INFOPLIST_FILE: NO
 
 targets:
   SeltosBrowser:
@@ -26,6 +25,13 @@ targets:
       - path: SeltosBrowser
     info:
       path: SeltosBrowser/App/Info.plist
+      properties:
+        CFBundleDisplayName: "Kia Browser"
+        CFBundleName: "Kia Browser"
+        UILaunchStoryboardName: "LaunchScreen"
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+          NSAllowsArbitraryLoadsInWebContent: true
     frameworks:
       - framework: WebKit.framework
       - framework: CarPlay.framework
@@ -36,6 +42,10 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.seltos.browser
         PRODUCT_NAME: SeltosBrowser
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: SeltosBrowser/App/Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: "Kia Browser"
+        INFOPLIST_KEY_UILaunchStoryboardName: "LaunchScreen"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         CODE_SIGN_STYLE: Manual
