@@ -7,9 +7,6 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   build-and-package:
     name: Build & Package SeltosBrowser IPA
@@ -18,8 +15,6 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Select Xcode 16
         run: |
@@ -51,19 +46,7 @@ jobs:
             CODE_SIGN_STYLE="Manual" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            2>&1 | tee build.log
-
-      - name: Commit Debug Log on Failure
-        if: failure()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -B debug-log
-          cp build.log xcodebuild-debug.txt || true
-          git add xcodebuild-debug.txt
-          git commit -m "debug: xcodebuild failure log" || true
-          git push -f origin debug-log || true
+            CODE_SIGN_IDENTITY=""
 
       - name: Package Unsigned IPA for Sideloading
         run: |
