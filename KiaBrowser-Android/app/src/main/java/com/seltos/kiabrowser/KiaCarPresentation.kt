@@ -7,8 +7,9 @@ import android.os.Bundle
 import android.view.Display
 import android.view.View
 import android.webkit.*
-import android.widget.ImageButton
 import android.widget.TextView
+import androidx.appcompat.view.ContextThemeWrapper
+import androidx.appcompat.widget.AppCompatImageButton
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 
@@ -17,19 +18,19 @@ class KiaCarPresentation(
     display: Display,
     private val initialUrl: String = "https://m.youtube.com",
     private val onMediaStateChanged: ((title: String, isPlaying: Boolean) -> Unit)? = null
-) : Presentation(outerContext, display) {
+) : Presentation(ContextThemeWrapper(outerContext, R.style.Theme_KiaBrowser), display, R.style.Theme_KiaBrowser) {
 
     private lateinit var carWebView: WebView
     private lateinit var carTitleText: TextView
-    private lateinit var btnCarHome: ImageButton
-    private lateinit var btnCarBack: ImageButton
-    private lateinit var btnCarRefresh: ImageButton
-    private lateinit var btnCarPlayPause: ImageButton
-    private lateinit var btnCarPrevious: ImageButton
-    private lateinit var btnCarNext: ImageButton
-    private lateinit var btnCarRewind5: ImageButton
-    private lateinit var btnCarForward5: ImageButton
-    private lateinit var btnCarFullscreen: ImageButton
+    private lateinit var btnCarHome: AppCompatImageButton
+    private lateinit var btnCarBack: AppCompatImageButton
+    private lateinit var btnCarRefresh: AppCompatImageButton
+    private lateinit var btnCarPlayPause: AppCompatImageButton
+    private lateinit var btnCarPrevious: AppCompatImageButton
+    private lateinit var btnCarNext: AppCompatImageButton
+    private lateinit var btnCarRewind5: AppCompatImageButton
+    private lateinit var btnCarForward5: AppCompatImageButton
+    private lateinit var btnCarFullscreen: AppCompatImageButton
     private lateinit var tvCarRewindLabel: TextView
     private lateinit var tvCarForwardLabel: TextView
 

@@ -41,31 +41,34 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/btnCarHome"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="Home"
             android:src="@drawable/ic_home"
+            android:tint="#FFFFFF"
             app:tint="#FFFFFF" />
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/btnCarBack"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="Back"
             android:src="@drawable/ic_arrow_back"
+            android:tint="#FFFFFF"
             app:tint="#FFFFFF" />
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/btnCarRefresh"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="Refresh"
             android:src="@drawable/ic_refresh"
+            android:tint="#FFFFFF"
             app:tint="#FFFFFF" />
     </LinearLayout>
 
@@ -83,23 +86,25 @@
         android:paddingVertical="8dp">
 
         <!-- Previous Video Track -->
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/btnCarPrevious"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="Previous Video"
             android:src="@drawable/ic_skip_previous"
+            android:tint="#FFFFFF"
             app:tint="#FFFFFF" />
 
         <!-- 5s Rewind -->
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/btnCarRewind5"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="Rewind 5s"
             android:src="@drawable/ic_replay_5"
+            android:tint="#00E5FF"
             app:tint="#00E5FF" />
 
         <TextView
@@ -113,13 +118,14 @@
             android:textStyle="bold" />
 
         <!-- Play / Pause -->
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/btnCarPlayPause"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:background="@drawable/bg_circle_accent"
             android:contentDescription="Play Pause"
             android:src="@drawable/ic_play"
+            android:tint="#0F172A"
             app:tint="#0F172A" />
 
         <!-- 5s Forward -->
@@ -133,23 +139,25 @@
             android:textSize="12sp"
             android:textStyle="bold" />
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/btnCarForward5"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="Forward 5s"
             android:src="@drawable/ic_forward_5"
+            android:tint="#00E5FF"
             app:tint="#00E5FF" />
 
         <!-- Next Video Track -->
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/btnCarNext"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="Next Video"
             android:src="@drawable/ic_skip_next"
+            android:tint="#FFFFFF"
             app:tint="#FFFFFF" />
 
         <View
@@ -159,13 +167,14 @@
             android:background="#475569" />
 
         <!-- Fullscreen -->
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/btnCarFullscreen"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="Fullscreen"
             android:src="@drawable/ic_fullscreen"
+            android:tint="#FFFFFF"
             app:tint="#FFFFFF" />
     </LinearLayout>
 
