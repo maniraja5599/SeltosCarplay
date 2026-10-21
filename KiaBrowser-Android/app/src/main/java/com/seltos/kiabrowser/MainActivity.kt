@@ -3,6 +3,7 @@ package com.seltos.kiabrowser
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -10,8 +11,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
+import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,6 +38,22 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
     private var isPlayingMedia = false
     private var isFullscreen = false
     private var lastLoadedUrl: String? = null
+
+    inner class KiaMediaBridge {
+        @JavascriptInterface
+        fun onMediaState(title: String, isPlaying: Boolean) {
+            runOnUiThread {
+                if (title.isNotBlank() && title != "Kia Browser Media") {
+                    lastMediaTitle = title
+                }
+                updatePlayPauseButtonUi(isPlaying)
+                mediaSessionManager.updatePlaybackState(isPlaying, 0)
+                if (isPlaying) {
+                    KiaPlaybackService.startService(this@MainActivity, lastMediaTitle, true)
+                }
+            }
+        }
+    }
 
     private val speechRecognizerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -83,6 +102,7 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         setupShortcuts()
         setupHomeSettings()
         updateSeekButtonLabels()
+        fetchLiveUpdates()
 
         val initialUrl = intent?.dataString
         if (!initialUrl.isNullOrBlank()) {
@@ -150,6 +170,7 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         webSettings.databaseEnabled = true
 
         applyDesktopMode(settingsManager.isDesktopMode)
+        binding.mainWebView.addJavascriptInterface(KiaMediaBridge(), "KiaMediaBridge")
 
         // Inject anti-pause and ad-block scripts at document start before YouTube page scripts execute
         if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
@@ -195,6 +216,7 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
                 if (settingsManager.isAdBlockEnabled && YouTubeWebHelper.isYouTubeUrl(view?.url)) {
                     view?.evaluateJavascript(YouTubeWebHelper.AD_AND_PROMO_SUPPRESSION_SCRIPT, null)
                 }
+                view?.evaluateJavascript(YouTubeWebHelper.MEDIA_STATE_LISTENER_SCRIPT, null)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -205,21 +227,16 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
                 if (settingsManager.isAdBlockEnabled) {
                     binding.mainWebView.evaluateJavascript(YouTubeWebHelper.AD_AND_PROMO_SUPPRESSION_SCRIPT, null)
                 }
+                binding.mainWebView.evaluateJavascript(YouTubeWebHelper.MEDIA_STATE_LISTENER_SCRIPT, null)
 
                 val title = view?.title ?: "Kia Browser"
                 lastMediaTitle = title
-                isPlayingMedia = true
-                updatePlayPauseButtonUi(true)
                 mediaSessionManager.updateMetadata(title, "Kia Browser", 0)
-                mediaSessionManager.updatePlaybackState(true, 0)
 
                 // Bring playback controls to the front of scroll view
                 if (!isHome) {
                     binding.mediaControlsGroup.post { binding.mediaControlsGroup.scrollTo(0, 0) }
                 }
-
-                // Start Foreground Service so Android never kills background playback
-                KiaPlaybackService.startService(this@MainActivity, title, true)
             }
         }
 
@@ -252,6 +269,34 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             } else {
                 false
             }
+        }
+
+        // Search Input Click and Focus - Reliable soft keyboard opener
+        binding.etSearchOrUrl.setOnClickListener {
+            binding.etSearchOrUrl.requestFocus()
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            imm?.showSoftInput(binding.etSearchOrUrl, InputMethodManager.SHOW_IMPLICIT)
+        }
+        binding.etSearchOrUrl.setOnFocusChangeListener { v, hasFocus ->
+            if (hasFocus) {
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT)
+            }
+        }
+
+        // Web touch focus for soft keyboard on web input fields
+        binding.mainWebView.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_UP) {
+                if (!v.hasFocus()) {
+                    v.requestFocus()
+                }
+            }
+            false
+        }
+
+        // Home Live Cricket & News Card
+        binding.cardHomeLiveScore.setOnClickListener {
+            loadUrl("file:///android_asset/cricket_hub.html")
         }
 
         // Google Voice Search
@@ -297,21 +342,7 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             }
         }
 
-        // Bottom Navigation
-        binding.btnNavBack.setOnClickListener {
-            if (binding.mainWebView.canGoBack() && !isHome) {
-                binding.mainWebView.goBack()
-            } else {
-                showHome()
-            }
-        }
-
-        binding.btnNavForward.setOnClickListener {
-            if (binding.mainWebView.canGoForward() && !isHome) {
-                binding.mainWebView.goForward()
-            }
-        }
-
+        // Bottom Navigation: Home
         binding.btnNavHome.setOnClickListener {
             showHome()
         }
@@ -327,7 +358,7 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             onMediaSeekForward(step)
         }
 
-        // Desktop Mode Toggle
+        // Desktop Mode Toggle (In player controls bar)
         binding.btnToggleDesktop.setOnClickListener {
             val newMode = !settingsManager.isDesktopMode
             settingsManager.isDesktopMode = newMode
@@ -518,6 +549,9 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
     private fun updateDesktopUi(enabled: Boolean) {
         val color = if (enabled) getColor(R.color.accent) else getColor(R.color.text_secondary)
         binding.btnToggleDesktop.setColorFilter(color)
+        binding.btnToggleDesktop.setImageResource(
+            if (enabled) R.drawable.ic_desktop_windows else R.drawable.ic_phone_android
+        )
     }
 
     private fun showHome() {
@@ -650,16 +684,42 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
     private fun updatePlayPauseButtonUi(isPlaying: Boolean) {
         isPlayingMedia = isPlaying
         runOnUiThread {
-            binding.btnNavPlayPause.setImageResource(
-                if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
-            )
+            val iconRes = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+            binding.btnNavPlayPause.setImageResource(iconRes)
+            binding.btnBannerPlayPause.setImageResource(iconRes)
         }
+    }
+
+    private fun fetchLiveUpdates() {
+        Thread {
+            try {
+                val url = java.net.URL("https://timesofindia.indiatimes.com/rssfeeds/4719148.cms")
+                val connection = url.openConnection() as java.net.HttpURLConnection
+                connection.connectTimeout = 4000
+                connection.readTimeout = 4000
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0")
+                if (connection.responseCode == 200) {
+                    val xml = connection.inputStream.bufferedReader().use { it.readText() }
+                    val itemRegex = Regex("<item>.*?<title>(.*?)</title>.*?</item>", RegexOption.DOT_MATCHES_ALL)
+                    val match = itemRegex.find(xml)
+                    val title = match?.groups?.get(1)?.value?.replace("<![CDATA[", "")?.replace("]]>", "")?.trim()
+                    if (!title.isNullOrBlank()) {
+                        runOnUiThread {
+                            binding.tvHomeMatchStatus.text = "⚡ $title • Tap for full scorecard"
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Keep default score preview
+            }
+        }.start()
     }
 
     // MARK: - MediaControlListener (Steering wheel and buttons)
 
     override fun onMediaPlay() {
-        binding.mainWebView.evaluateJavascript(YouTubeWebHelper.TOGGLE_PLAY_PAUSE_SCRIPT, null)
+        binding.mainWebView.evaluateJavascript(YouTubeWebHelper.PLAY_SCRIPT, null)
         carDisplayManager.currentPresentation?.togglePlayPause()
         updatePlayPauseButtonUi(true)
         mediaSessionManager.updatePlaybackState(true, 0)
@@ -667,7 +727,7 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
     }
 
     override fun onMediaPause() {
-        binding.mainWebView.evaluateJavascript(YouTubeWebHelper.TOGGLE_PLAY_PAUSE_SCRIPT, null)
+        binding.mainWebView.evaluateJavascript(YouTubeWebHelper.PAUSE_SCRIPT, null)
         carDisplayManager.currentPresentation?.togglePlayPause()
         updatePlayPauseButtonUi(false)
         mediaSessionManager.updatePlaybackState(false, 0)

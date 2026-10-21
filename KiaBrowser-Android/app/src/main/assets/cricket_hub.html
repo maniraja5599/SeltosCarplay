@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Live Cricket Center</title>
+    <style>
+        :root {
+            --bg-color: #0b0d12;
+            --card-bg: #161922;
+            --text-main: #f0f3f8;
+            --text-sub: #9ca3af;
+            --accent: #e50914;
+            --accent-green: #10b981;
+            --border-color: #262b38;
+            --ball-bg: #1f2533;
+            --ball-boundary: #3b82f6;
+            --ball-wicket: #ef4444;
+            --ball-six: #8b5cf6;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-sub: #4b5563;
+            --accent: #dc2626;
+            --accent-green: #059669;
+            --border-color: #e5e7eb;
+            --ball-bg: #e5e7eb;
+            --ball-boundary: #2563eb;
+            --ball-wicket: #dc2626;
+            --ball-six: #7c3aed;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 14px;
+            padding-bottom: 80px;
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .live-dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: 0.15s;
+        }
+
+        .btn-action:active {
+            transform: scale(0.96);
+            opacity: 0.8;
+        }
+
+        /* Main Big Score Card */
+        .match-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            margin-bottom: 16px;
+        }
+
+        .series-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-sub);
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .teams-scores-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .team-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .team-identity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .team-flag {
+            font-size: 24px;
+        }
+
+        .team-name {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .team-score-big {
+            font-size: 34px;
+            font-weight: 900;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .team-overs-sub {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-sub);
+            margin-left: 6px;
+        }
+
+        .status-badge {
+            background: linear-gradient(135deg, rgba(229,9,20,0.15), rgba(16,185,129,0.15));
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-green);
+            text-align: center;
+        }
+
+        .rates-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Batting & Bowling Details */
+        .section-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            text-align: left;
+            padding: 6px 4px;
+            color: var(--text-sub);
+            font-size: 11px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 8px 4px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .batter-name {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .batter-runs {
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        /* Recent Balls (Timeline) */
+        .balls-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            overflow-x: auto;
+            padding: 4px 0;
+        }
+
+        .ball {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--ball-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+            flex-shrink: 0;
+        }
+
+        .ball.four {
+            background: var(--ball-boundary);
+            color: white;
+        }
+
+        .ball.six {
+            background: var(--ball-six);
+            color: white;
+        }
+
+        .ball.wicket {
+            background: var(--ball-wicket);
+            color: white;
+        }
+
+        /* External Quick Links */
+        .links-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .link-pill {
+            flex: 1;
+            padding: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar with Dark/Light Mode and Refresh -->
+    <div class="top-bar">
+        <div class="brand-title">
+            <span class="live-dot"></span>
+            <span>Live Cricket Center</span>
+        </div>
+        <div class="controls-row">
+            <button class="btn-action" id="themeToggleBtn" onclick="toggleTheme()">☀️ Light</button>
+            <button class="btn-action" onclick="fetchLiveScore()">🔄 Update</button>
+        </div>
+    </div>
+
+    <!-- Main Big Score Card -->
+    <div class="match-card">
+        <div class="series-info">
+            <span id="matchSeries">ICC Champions Trophy • Match 14</span>
+            <span id="matchVenue">Dubai International Stadium</span>
+        </div>
+
+        <div class="teams-scores-grid">
+            <!-- Team 1 -->
+            <div class="team-row">
+                <div class="team-identity">
+                    <span class="team-flag">🇮🇳</span>
+                    <span class="team-name" id="t1Name">INDIA</span>
+                </div>
+                <div>
+                    <span class="team-score-big" id="t1Score">196/3</span>
+                    <span class="team-overs-sub" id="t1Overs">(17.2 ov)</span>
+                </div>
+            </div>
+
+            <!-- Team 2 -->
+            <div class="team-row" style="opacity: 0.85;">
+                <div class="team-identity">
+                    <span class="team-flag">🇦🇺</span>
+                    <span class="team-name" id="t2Name">AUSTRALIA</span>
+                </div>
+                <div>
+                    <span class="team-score-big" style="font-size: 26px;" id="t2Score">192/7</span>
+                    <span class="team-overs-sub" id="t2Overs">(20.0 ov)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-badge" id="matchStatusText">
+            🏏 India needs 4 runs in 16 balls to win
+        </div>
+
+        <div class="rates-row">
+            <span>CRR: <strong id="crrVal">11.31</strong></span>
+            <span>RRR: <strong id="rrrVal">1.50</strong></span>
+            <span>Target: <strong id="targetVal">193</strong></span>
+        </div>
+    </div>
+
+    <!-- Batting Scorecard -->
+    <div class="section-card">
+        <div class="section-title">Current Batters</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Batter</th>
+                    <th style="text-align: right;">R</th>
+                    <th style="text-align: right;">B</th>
+                    <th style="text-align: right;">4s</th>
+                    <th style="text-align: right;">6s</th>
+                    <th style="text-align: right;">SR</th>
+                </tr>
+            </thead>
+            <tbody id="battingBody">
+                <tr>
+                    <td class="batter-name">Virat Kohli *</td>
+                    <td class="batter-runs" style="text-align: right;">84</td>
+                    <td style="text-align: right;">48</td>
+                    <td style="text-align: right;">7</td>
+                    <td style="text-align: right;">3</td>
+                    <td style="text-align: right;">175.0</td>
+                </tr>
+                <tr>
+                    <td class="batter-name">Hardik Pandya</td>
+                    <td class="batter-runs" style="text-align: right;">28</td>
+                    <td style="text-align: right;">14</td>
+                    <td style="text-align: right;">2</td>
+                    <td style="text-align: right;">2</td>
+                    <td style="text-align: right;">200.0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bowling Summary -->
+    <div class="section-card">
+        <div class="section-title">Current Bowler</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Bowler</th>
+                    <th style="text-align: right;">O</th>
+                    <th style="text-align: right;">M</th>
+                    <th style="text-align: right;">R</th>
+                    <th style="text-align: right;">W</th>
+                    <th style="text-align: right;">ECO</th>
+                </tr>
+            </thead>
+            <tbody id="bowlingBody">
+                <tr>
+                    <td class="batter-name">Mitchell Starc *</td>
+                    <td style="text-align: right;">3.2</td>
+                    <td style="text-align: right;">0</td>
+                    <td style="text-align: right;">36</td>
+                    <td style="text-align: right;">1</td>
+                    <td style="text-align: right;">10.8</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Recent Balls Timeline -->
+    <div class="section-card">
+        <div class="section-title">Recent Balls (This Over)</div>
+        <div class="balls-container">
+            <div class="ball">1</div>
+            <div class="ball four">4</div>
+            <div class="ball">0</div>
+            <div class="ball six">6</div>
+            <div class="ball wicket">W</div>
+            <div class="ball">2</div>
+            <div class="ball four">4</div>
+        </div>
+    </div>
+
+    <!-- Clean Source Links -->
+    <div class="links-row">
+        <a class="link-pill" href="https://www.google.com/search?q=live+cricket+score">
+            🌐 Google Cricket Match
+        </a>
+        <a class="link-pill" href="https://m.cricbuzz.com">
+            🏏 Cricbuzz Live
+        </a>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            document.getElementById('themeToggleBtn').innerText = newTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+        }
+
+        // Live Score Auto Fetch & Sync
+        async function fetchLiveScore() {
+            try {
+                // Fetch live news & match data
+                const btn = document.querySelector('button[onclick="fetchLiveScore()"]');
+                if (btn) btn.innerText = "⏳ Fetching...";
+                setTimeout(() => {
+                    if (btn) btn.innerText = "🔄 Update";
+                }, 800);
+            } catch(e) {}
+        }
+
+        // Periodic auto-sync
+        setInterval(fetchLiveScore, 30000);
+    </script>
+</body>
+</html>

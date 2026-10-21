@@ -276,6 +276,67 @@ object YouTubeWebHelper {
     }
 
     /**
+     * Explicit Play Action
+     */
+    const val PLAY_SCRIPT = """
+        (function() {
+            try {
+                const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
+                if (player && typeof player.playVideo === 'function') {
+                    player.playVideo();
+                    return;
+                }
+                const video = document.querySelector('video') || document.querySelector('audio');
+                if (video) video.play();
+            } catch(e) {}
+        })();
+    """
+
+    /**
+     * Explicit Pause Action
+     */
+    const val PAUSE_SCRIPT = """
+        (function() {
+            try {
+                const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
+                if (player && typeof player.pauseVideo === 'function') {
+                    player.pauseVideo();
+                    return;
+                }
+                const video = document.querySelector('video') || document.querySelector('audio');
+                if (video) video.pause();
+            } catch(e) {}
+        })();
+    """
+
+    /**
+     * Media state listener injected to report play/pause state back to Android
+     */
+    const val MEDIA_STATE_LISTENER_SCRIPT = """
+        (function() {
+            if (window.__kiaMediaObserverInjected) return;
+            window.__kiaMediaObserverInjected = true;
+
+            function reportState() {
+                try {
+                    const video = document.querySelector('video') || document.querySelector('audio');
+                    if (video && window.KiaMediaBridge) {
+                        const isPlaying = !video.paused && !video.ended && video.readyState > 1;
+                        const title = document.title || 'Kia Browser Media';
+                        window.KiaMediaBridge.onMediaState(title, isPlaying);
+                    }
+                } catch(e) {}
+            }
+
+            document.addEventListener('play', reportState, true);
+            document.addEventListener('playing', reportState, true);
+            document.addEventListener('pause', reportState, true);
+            document.addEventListener('ended', reportState, true);
+            setInterval(reportState, 1500);
+        })();
+    """
+
+    /**
      * Toggle Play/Pause
      */
     const val TOGGLE_PLAY_PAUSE_SCRIPT = """

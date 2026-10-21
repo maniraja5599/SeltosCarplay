@@ -44,7 +44,7 @@
                 android:background="@null"
                 android:hint="@string/search_hint"
                 android:imeOptions="actionGo"
-                android:inputType="textUri|textWebEditText"
+                android:inputType="text|textUri"
                 android:maxLines="1"
                 android:textColor="@color/text_primary"
                 android:textColorHint="@color/text_secondary"
@@ -158,6 +158,118 @@
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
+                </LinearLayout>
+
+                <!-- Live Cricket & Top Updates Card -->
+                <LinearLayout
+                    android:id="@+id/cardHomeLiveScore"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_shortcut_card"
+                    android:clickable="true"
+                    android:elevation="2dp"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <!-- Header Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvLiveBadge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_circle_accent"
+                            android:paddingHorizontal="7dp"
+                            android:paddingVertical="2dp"
+                            android:text="● LIVE"
+                            android:textColor="#FFFFFF"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvScoreCardCategory"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:text="LIVE CRICKET &amp; TOP UPDATES"
+                            android:textColor="@color/accent"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvScoreOpenHint"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="View Match ▶"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <!-- Big Score Highlight -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvHomeTeam1"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="IND 🏏  196/3"
+                                android:textColor="@color/text_primary"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvHomeTeam2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="AUS     192/7 (20.0 ov)"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvHomeOvers"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_car_hud"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
+                            android:text="17.2 ov"
+                            android:textColor="@color/accent"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Status line -->
+                    <TextView
+                        android:id="@+id/tvHomeMatchStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="India needs 4 runs in 16 balls • Tap for ad-free scorecard"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <!-- Shortcuts Section Header -->
@@ -1204,33 +1316,20 @@
                     android:src="@drawable/ic_home"
                     app:tint="@color/accent" />
 
-                <!-- 7. Web Back -->
+                <!-- 7. Desktop / Mobile Mode Toggle (In place of back/forward arrows) -->
                 <ImageButton
-                    android:id="@+id/btnNavBack"
+                    android:id="@+id/btnToggleDesktop"
                     android:layout_width="42dp"
                     android:layout_height="42dp"
                     android:layout_marginHorizontal="2dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Back"
+                    android:contentDescription="Toggle Desktop/Mobile View"
                     android:padding="10dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/ic_arrow_back"
+                    android:src="@drawable/ic_desktop_windows"
                     app:tint="@color/text_secondary" />
 
-                <!-- 8. Web Forward -->
-                <ImageButton
-                    android:id="@+id/btnNavForward"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
-                    android:layout_marginHorizontal="2dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Forward"
-                    android:padding="10dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ic_arrow_forward"
-                    app:tint="@color/text_secondary" />
-
-                <!-- 9. Reload -->
+                <!-- 8. Reload -->
                 <ImageButton
                     android:id="@+id/btnNavReload"
                     android:layout_width="42dp"
@@ -1241,19 +1340,6 @@
                     android:padding="10dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_refresh"
-                    app:tint="@color/text_secondary" />
-
-                <!-- 10. Desktop Mode Toggle -->
-                <ImageButton
-                    android:id="@+id/btnToggleDesktop"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
-                    android:layout_marginHorizontal="2dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Desktop Mode"
-                    android:padding="10dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ic_desktop_windows"
                     app:tint="@color/text_secondary" />
 
                 <!-- 11. AdBlock Shield Toggle -->
