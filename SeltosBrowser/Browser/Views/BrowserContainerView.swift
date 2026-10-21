@@ -1,8 +1,10 @@
 import SwiftUI
+import WebKit
 
 /// Main full-screen iPhone browser container view coordinating navigation, WebKit, and controls
 public struct BrowserContainerView: View {
     @StateObject private var viewModel = BrowserViewModel.shared
+    @State private var showShareSheet: Bool = false
 
     public init() {}
 
@@ -13,9 +15,9 @@ public struct BrowserContainerView: View {
                 AddressBarView(viewModel: viewModel)
             }
             .padding(.horizontal, 16)
-            .padding(.top, 8)
+            .padding(.top, 4)
             .padding(.bottom, 6)
-            .background(Color(.systemBackground))
+            .background(Color(.systemBackground).ignoresSafeArea(edges: .top))
 
             // Navigation Loading Progress Bar
             if viewModel.activeTab.isLoading {
@@ -39,7 +41,6 @@ public struct BrowserContainerView: View {
                     )
                 } else {
                     WebViewContainer(viewModel: viewModel, tabId: viewModel.tabManager.activeTabId)
-                        .edgesIgnoringSafeArea(.horizontal)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -48,11 +49,12 @@ public struct BrowserContainerView: View {
 
             // Bottom Navigation Toolbar
             bottomToolbar
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 12)
                 .padding(.top, 8)
-                .padding(.bottom, 4)
-                .background(Color(.systemBackground))
+                .padding(.bottom, 6)
+                .background(Color(.systemBackground).ignoresSafeArea(edges: .bottom))
         }
+        .background(Color(.systemBackground).ignoresSafeArea())
         .sheet(isPresented: $viewModel.showTabSwitcher) {
             TabSwitcherView(viewModel: viewModel)
         }
@@ -65,16 +67,21 @@ public struct BrowserContainerView: View {
         .sheet(isPresented: $viewModel.showSettingsSheet) {
             SettingsSheetView(viewModel: viewModel)
         }
+        .sheet(isPresented: $showShareSheet) {
+            if let url = viewModel.activeTab.url {
+                ShareSheet(activityItems: [url])
+            }
+        }
     }
 
     private var bottomToolbar: some View {
-        HStack {
+        HStack(spacing: 4) {
             // Back
             Button(action: {
                 viewModel.goBack()
             }) {
                 Image(systemName: "chevron.backward")
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
             }
             .disabled(!viewModel.activeTab.canGoBack)
             .frame(maxWidth: .infinity)
@@ -84,7 +91,7 @@ public struct BrowserContainerView: View {
                 viewModel.goForward()
             }) {
                 Image(systemName: "chevron.forward")
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
             }
             .disabled(!viewModel.activeTab.canGoForward)
             .frame(maxWidth: .infinity)
@@ -94,8 +101,32 @@ public struct BrowserContainerView: View {
                 viewModel.goToHome()
             }) {
                 Image(systemName: "house")
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
             }
+            .frame(maxWidth: .infinity)
+
+            // Share Page
+            Button(action: {
+                if viewModel.activeTab.url != nil {
+                    showShareSheet = true
+                }
+            }) {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 17, weight: .semibold))
+            }
+            .disabled(viewModel.activeTab.isHome)
+            .frame(maxWidth: .infinity)
+
+            // Desktop / Mobile Quick Toggle
+            Button(action: {
+                viewModel.settingsManager.requestDesktopSites.toggle()
+                viewModel.reload()
+            }) {
+                Image(systemName: viewModel.settingsManager.requestDesktopSites ? "desktopcomputer" : "iphone")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(viewModel.settingsManager.requestDesktopSites ? .accentColor : .primary)
+            }
+            .disabled(viewModel.activeTab.isHome)
             .frame(maxWidth: .infinity)
 
             // Bookmarks
@@ -103,16 +134,7 @@ public struct BrowserContainerView: View {
                 viewModel.showBookmarksSheet = true
             }) {
                 Image(systemName: "book")
-                    .font(.system(size: 18, weight: .semibold))
-            }
-            .frame(maxWidth: .infinity)
-
-            // History
-            Button(action: {
-                viewModel.showHistorySheet = true
-            }) {
-                Image(systemName: "clock")
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
             }
             .frame(maxWidth: .infinity)
 
@@ -123,10 +145,10 @@ public struct BrowserContainerView: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 6)
                         .stroke(Color.primary, lineWidth: 1.8)
-                        .frame(width: 22, height: 22)
+                        .frame(width: 20, height: 20)
 
                     Text("\(viewModel.tabManager.tabs.count)")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.system(size: 10, weight: .bold))
                 }
             }
             .frame(maxWidth: .infinity)
@@ -136,10 +158,21 @@ public struct BrowserContainerView: View {
                 viewModel.showSettingsSheet = true
             }) {
                 Image(systemName: "gearshape")
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
             }
             .frame(maxWidth: .infinity)
         }
         .foregroundColor(.primary)
     }
+}
+
+/// UIActivityViewController representable for native iOS sharing
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

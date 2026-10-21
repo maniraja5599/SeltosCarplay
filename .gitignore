@@ -3,6 +3,7 @@
 */.DS_Store
 build/
 DerivedData/
+derived_data/
 *.xcuserstate
 *.xcuserdatad
 xcuserdata/
@@ -22,7 +23,12 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 
-# Visual Studio Code & Windows
+# Large Binaries & Windows
+iTunes64Setup.exe
+*.exe
+*.ipa
+*.zip
+build-output/
 .vscode/
 Thumbs.db
 ehthumbs.db

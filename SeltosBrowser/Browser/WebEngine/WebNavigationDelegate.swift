@@ -63,6 +63,24 @@ public final class WebNavigationDelegate: NSObject, WKNavigationDelegate, WKUIDe
             return
         }
 
+        let scheme = url.scheme?.lowercased() ?? ""
+
+        // Block external application deep links (prevents opening native YouTube / App Store apps)
+        if scheme == "youtube" || scheme == "vnd.youtube" || scheme == "intent" || scheme == "itms-appss" {
+            decisionHandler(.cancel)
+            return
+        }
+
+        // Intercept link clicks to prevent iOS Universal Links from handing off to external apps
+        if navigationAction.navigationType == .linkActivated,
+           let host = url.host?.lowercased(),
+           host.contains("youtube.com") || host.contains("youtu.be") {
+            // Cancel system universal link handoff and load strictly inside this WKWebView
+            decisionHandler(.cancel)
+            webView.load(URLRequest(url: url))
+            return
+        }
+
         if WebKitSecurityPolicy.isNavigationAllowed(for: url) {
             decisionHandler(.allow)
         } else {

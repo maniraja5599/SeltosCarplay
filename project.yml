@@ -15,6 +15,8 @@ settings:
     CODE_SIGNING_REQUIRED: NO
     CODE_SIGN_IDENTITY: ""
     ENABLE_BITCODE: NO
+    INFOPLIST_KEY_UILaunchStoryboardName: "LaunchScreen"
+    INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
 
 targets:
   SeltosBrowser:

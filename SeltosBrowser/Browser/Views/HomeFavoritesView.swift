@@ -92,11 +92,14 @@ public struct HomeFavoritesView: View {
 
     private func iconColor(for title: String) -> Color {
         switch title.lowercased() {
-        case "youtube": return .red
-        case "google": return .blue
+        case "youtube", "netflix", "youtube music": return .red
+        case "google", "prime video": return .blue
+        case "hotstar": return .indigo
+        case "spotify", "chatgpt": return .green
+        case "apple music": return .pink
+        case "twitch", "github": return .purple
+        case "duckduckgo", "reddit": return .orange
         case "wikipedia": return .primary
-        case "github": return .purple
-        case "duckduckgo": return .orange
         default: return .accentColor
         }
     }

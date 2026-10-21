@@ -15,6 +15,13 @@ public struct YouTubeHelper {
         if (window.__seltosMediaObserverLoaded) return;
         window.__seltosMediaObserverLoaded = true;
 
+        // Suppress mobile YouTube app install popups and top banners
+        try {
+            const bannerStyle = document.createElement('style');
+            bannerStyle.textContent = 'ytm-pivot-bar-renderer, .upsell-dialog, .mobile-topbar-header-upsell, ytm-app-banner, .open-in-app, .standalone-collection-badge-renderer { display: none !important; }';
+            document.documentElement.appendChild(bannerStyle);
+        } catch (e) {}
+
         function hookVideo(video) {
             if (video.__hooked) return;
             video.__hooked = true;

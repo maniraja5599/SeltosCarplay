@@ -7,7 +7,7 @@ public final class BookmarkManager: ObservableObject {
 
     @Published public private(set) var bookmarks: [Bookmark] = []
     
-    private let fileName = "bookmarks.json"
+    private let fileName = "bookmarks_v2.json"
     private let fileQueue = DispatchQueue(label: "com.seltosbrowser.bookmarks.queue", qos: .utility)
 
     public init() {
@@ -61,7 +61,7 @@ public final class BookmarkManager: ObservableObject {
     private func loadBookmarks() {
         let url = getFileURL()
         guard FileManager.default.fileExists(atPath: url.path) else {
-            // Populate defaults on first launch
+            // Populate rich streaming and browser defaults
             self.bookmarks = Self.defaultBookmarks
             saveBookmarks()
             return
@@ -99,9 +99,63 @@ public final class BookmarkManager: ObservableObject {
                 isFavorite: true
             ),
             Bookmark(
+                title: "Netflix",
+                urlString: "https://www.netflix.com",
+                iconName: "film.fill",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "Prime Video",
+                urlString: "https://www.primevideo.com",
+                iconName: "play.tv.fill",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "Hotstar",
+                urlString: "https://www.hotstar.com",
+                iconName: "sparkles.tv.fill",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "Spotify",
+                urlString: "https://open.spotify.com",
+                iconName: "waveform",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "Apple Music",
+                urlString: "https://music.apple.com",
+                iconName: "music.note",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "Twitch",
+                urlString: "https://www.twitch.tv",
+                iconName: "tv.fill",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "YouTube Music",
+                urlString: "https://music.youtube.com",
+                iconName: "music.quarternote.3",
+                isFavorite: true
+            ),
+            Bookmark(
                 title: "Google",
                 urlString: "https://www.google.com",
                 iconName: "magnifyingglass",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "ChatGPT",
+                urlString: "https://chatgpt.com",
+                iconName: "bubble.left.and.bubble.right.fill",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "Reddit",
+                urlString: "https://www.reddit.com",
+                iconName: "text.bubble.fill",
                 isFavorite: true
             ),
             Bookmark(

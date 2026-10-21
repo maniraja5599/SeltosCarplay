@@ -15,6 +15,7 @@ public struct WebViewContainer: UIViewRepresentable {
         configuration.allowsInlineMediaPlayback = true
         configuration.allowsPictureInPictureMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = []
+        configuration.applicationNameForUserAgent = "Version/17.5 Safari/605.1.15"
 
         if #available(iOS 15.4, *) {
             configuration.preferences.isElementFullscreenEnabled = true
