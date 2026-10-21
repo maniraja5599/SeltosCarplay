@@ -3,6 +3,7 @@ import SwiftUI
 /// Settings view providing search engine configuration, privacy controls, and full data clearing
 public struct SettingsSheetView: View {
     @ObservedObject var viewModel: BrowserViewModel
+    @ObservedObject private var settings = SettingsManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showWipeConfirmation = false
     @State private var isClearingData = false
@@ -13,7 +14,7 @@ public struct SettingsSheetView: View {
             Form {
                 // Search Engine Configuration
                 Section(header: Text("Search Engine")) {
-                    Picker("Default Engine", selection: $viewModel.settingsManager.searchEngine) {
+                    Picker("Default Engine", selection: $settings.searchEngine) {
                         ForEach(SearchEngine.allCases) { engine in
                             Text(engine.rawValue).tag(engine)
                         }
@@ -22,15 +23,15 @@ public struct SettingsSheetView: View {
 
                 // Web Capabilities & Security
                 Section(header: Text("Security & Privacy")) {
-                    Toggle("Enforce HTTPS Only", isOn: $viewModel.settingsManager.enforceHTTPSOnly)
-                    Toggle("Block Intrusive Ads & Trackers", isOn: $viewModel.settingsManager.blockAdsAndTrackers)
-                    Toggle("Block Popups", isOn: $viewModel.settingsManager.blockPopups)
-                    Toggle("Request Desktop Sites", isOn: $viewModel.settingsManager.requestDesktopSites)
+                    Toggle("Enforce HTTPS Only", isOn: $settings.enforceHTTPSOnly)
+                    Toggle("Block Intrusive Ads & Trackers", isOn: $settings.blockAdsAndTrackers)
+                    Toggle("Block Popups", isOn: $settings.blockPopups)
+                    Toggle("Request Desktop Sites", isOn: $settings.requestDesktopSites)
                 }
 
                 // Media & Playback
                 Section(header: Text("Media Playback"), footer: Text("Inline media playback allows YouTube videos to play directly on web pages and enables Picture-in-Picture on iPhone.")) {
-                    Toggle("Allow Inline Media Playback", isOn: $viewModel.settingsManager.allowInlineMediaPlayback)
+                    Toggle("Allow Inline Media Playback", isOn: $settings.allowInlineMediaPlayback)
                 }
 
                 // Privacy & Data Destruction

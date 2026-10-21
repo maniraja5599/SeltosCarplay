@@ -14,12 +14,12 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
     @Published public var showHistorySheet: Bool = false
     @Published public var showSettingsSheet: Bool = false
 
-    public let tabManager = TabManager.shared
-    public let bookmarkManager = BookmarkManager.shared
-    public let historyManager = HistoryManager.shared
-    public let settingsManager = SettingsManager.shared
-    public let audioSessionManager = AudioSessionManager.shared
-    public let nowPlayingManager = NowPlayingManager.shared
+    public var tabManager = TabManager.shared
+    public var bookmarkManager = BookmarkManager.shared
+    public var historyManager = HistoryManager.shared
+    public var settingsManager = SettingsManager.shared
+    public var audioSessionManager = AudioSessionManager.shared
+    public var nowPlayingManager = NowPlayingManager.shared
 
     private var webViews: [UUID: WKWebView] = [:]
     private var cancellables = Set<AnyCancellable>()
