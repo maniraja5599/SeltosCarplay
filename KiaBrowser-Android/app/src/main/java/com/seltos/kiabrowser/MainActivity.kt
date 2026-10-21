@@ -78,6 +78,7 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         setupWebView()
         setupListeners()
         setupShortcuts()
+        setupHomeSettings()
         updateSeekButtonLabels()
 
         val initialUrl = intent?.dataString
@@ -203,7 +204,9 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
                 mediaSessionManager.updatePlaybackState(true, 0)
 
                 // Bring playback controls to the front of scroll view
-                binding.bottomBar.post { binding.bottomBar.scrollTo(0, 0) }
+                if (!isHome) {
+                    binding.mediaControlsGroup.post { binding.mediaControlsGroup.scrollTo(0, 0) }
+                }
 
                 // Start Foreground Service so Android never kills background playback
                 KiaPlaybackService.startService(this@MainActivity, title, true)
@@ -312,9 +315,8 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             val newMode = !settingsManager.isDesktopMode
             settingsManager.isDesktopMode = newMode
             applyDesktopMode(newMode)
-            binding.btnToggleDesktop.setColorFilter(
-                if (newMode) getColor(R.color.accent) else getColor(R.color.text_secondary)
-            )
+            updateDesktopUi(newMode)
+            binding.switchDesktop.isChecked = newMode
             Toast.makeText(this, if (newMode) "Desktop Site Enabled" else "Mobile Site Enabled", Toast.LENGTH_SHORT).show()
             if (!isHome) {
                 binding.mainWebView.reload()
@@ -322,15 +324,11 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         }
 
         // AdBlock Toggle
-        binding.btnToggleAdBlock.setColorFilter(
-            if (settingsManager.isAdBlockEnabled) getColor(R.color.accent) else getColor(R.color.text_secondary)
-        )
         binding.btnToggleAdBlock.setOnClickListener {
             val newMode = !settingsManager.isAdBlockEnabled
             settingsManager.isAdBlockEnabled = newMode
-            binding.btnToggleAdBlock.setColorFilter(
-                if (newMode) getColor(R.color.accent) else getColor(R.color.text_secondary)
-            )
+            updateAdBlockUi(newMode)
+            binding.switchAdBlock.isChecked = newMode
             Toast.makeText(this, if (newMode) "Ad Blocker: ENABLED (All Ads Blocked)" else "Ad Blocker: DISABLED", Toast.LENGTH_SHORT).show()
             if (!isHome) {
                 binding.mainWebView.reload()
@@ -359,11 +357,112 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         binding.cardFast.setOnClickListener { loadUrl("https://fast.com") }
     }
 
+    private fun setupHomeSettings() {
+        val currentStep = settingsManager.seekInterval
+        binding.tvCurrentSeekStep.text = "${currentStep}s"
+        highlightSeekButton(currentStep)
+
+        binding.btnSeek5s.setOnClickListener { setSeekInterval(5) }
+        binding.btnSeek10s.setOnClickListener { setSeekInterval(10) }
+        binding.btnSeek15s.setOnClickListener { setSeekInterval(15) }
+        binding.btnSeek30s.setOnClickListener { setSeekInterval(30) }
+
+        // AdBlock Switch
+        binding.switchAdBlock.isChecked = settingsManager.isAdBlockEnabled
+        updateAdBlockUi(settingsManager.isAdBlockEnabled)
+        binding.switchAdBlock.setOnCheckedChangeListener { _, isChecked ->
+            settingsManager.isAdBlockEnabled = isChecked
+            updateAdBlockUi(isChecked)
+            Toast.makeText(
+                this,
+                if (isChecked) "Ad Blocker Enabled (100% Ad-Free)" else "Ad Blocker Disabled",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        binding.btnHomeAdBlock.setOnClickListener {
+            val newMode = !settingsManager.isAdBlockEnabled
+            binding.switchAdBlock.isChecked = newMode
+        }
+
+        // Desktop Mode Switch
+        binding.switchDesktop.isChecked = settingsManager.isDesktopMode
+        updateDesktopUi(settingsManager.isDesktopMode)
+        binding.switchDesktop.setOnCheckedChangeListener { _, isChecked ->
+            settingsManager.isDesktopMode = isChecked
+            applyDesktopMode(isChecked)
+            updateDesktopUi(isChecked)
+            Toast.makeText(
+                this,
+                if (isChecked) "Desktop Browser Enabled" else "Mobile Browser Enabled",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        binding.btnHomeDesktop.setOnClickListener {
+            val newMode = !settingsManager.isDesktopMode
+            binding.switchDesktop.isChecked = newMode
+        }
+
+        // Clear Cache
+        val clearCacheAction = {
+            binding.mainWebView.clearCache(true)
+            binding.mainWebView.clearHistory()
+            android.webkit.CookieManager.getInstance().removeAllCookies(null)
+            android.webkit.WebStorage.getInstance().deleteAllData()
+            Toast.makeText(this, "Browser Cache & Data Cleared!", Toast.LENGTH_SHORT).show()
+        }
+        binding.btnClearCacheAction.setOnClickListener { clearCacheAction() }
+        binding.btnHomeClearCache.setOnClickListener { clearCacheAction() }
+
+        // Voice Search from Home Bottom Bar
+        binding.btnHomeVoiceSearch.setOnClickListener {
+            startVoiceSearch()
+        }
+    }
+
+    private fun setSeekInterval(seconds: Int) {
+        settingsManager.seekInterval = seconds
+        binding.tvCurrentSeekStep.text = "${seconds}s"
+        highlightSeekButton(seconds)
+        updateSeekButtonLabels()
+        Toast.makeText(this, "Steering Seek Step set to ${seconds}s", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun highlightSeekButton(selectedStep: Int) {
+        val accentColor = getColor(R.color.accent)
+        val defaultColor = getColor(R.color.text_secondary)
+
+        binding.btnSeek5s.setTextColor(if (selectedStep == 5) accentColor else defaultColor)
+        binding.btnSeek10s.setTextColor(if (selectedStep == 10) accentColor else defaultColor)
+        binding.btnSeek15s.setTextColor(if (selectedStep == 15) accentColor else defaultColor)
+        binding.btnSeek30s.setTextColor(if (selectedStep == 30) accentColor else defaultColor)
+    }
+
+    private fun updateAdBlockUi(enabled: Boolean) {
+        val color = if (enabled) getColor(R.color.accent) else getColor(R.color.text_secondary)
+        binding.ivHomeAdBlock.setColorFilter(color)
+        binding.btnToggleAdBlock.setColorFilter(color)
+        binding.tvHomeAdBlock.text = if (enabled) "AdBlock: ON" else "AdBlock: OFF"
+        binding.tvAdBlockStatusDesc.text = if (enabled) "Block and skip all video and banner ads (Active)" else "Ad blocking disabled"
+    }
+
+    private fun updateDesktopUi(enabled: Boolean) {
+        val color = if (enabled) getColor(R.color.accent) else getColor(R.color.text_secondary)
+        binding.ivHomeDesktop.setColorFilter(color)
+        binding.tvHomeDesktop.setTextColor(color)
+        binding.btnToggleDesktop.setColorFilter(color)
+    }
+
     private fun showHome() {
         isHome = true
         binding.mainWebView.visibility = View.GONE
         binding.homeFavoritesView.visibility = View.VISIBLE
         binding.etSearchOrUrl.setText("")
+
+        // Hide player controls, show home controls
+        binding.mediaControlsGroup.visibility = View.GONE
+        binding.homeControlsGroup.visibility = View.VISIBLE
     }
 
     private fun loadUrl(url: String) {
@@ -371,6 +470,11 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         binding.homeFavoritesView.visibility = View.GONE
         binding.mainWebView.visibility = View.VISIBLE
         binding.mainWebView.loadUrl(url)
+
+        // Show player controls, hide home controls
+        binding.mediaControlsGroup.visibility = View.VISIBLE
+        binding.homeControlsGroup.visibility = View.GONE
+        binding.mediaControlsGroup.post { binding.mediaControlsGroup.scrollTo(0, 0) }
 
         // Also update car screen if connected
         carDisplayManager.currentPresentation?.loadUrl(url)

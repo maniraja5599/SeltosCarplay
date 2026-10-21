@@ -465,196 +465,652 @@
 
                 </GridLayout>
 
+                <!-- Settings & Configuration Section Header -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:layout_marginBottom="12dp"
+                    android:text="SETTINGS &amp; VEHICLE CONFIG"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <!-- Settings Card -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_shortcut_card"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Seek Interval Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Steering Seek Step"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvCurrentSeekStep"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="5s (Default)"
+                            android:textColor="@color/accent"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Seek Interval Buttons: 5s, 10s, 15s, 30s -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btnSeek5s"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="38dp"
+                            android:layout_marginEnd="4dp"
+                            android:layout_weight="1"
+                            android:text="5s"
+                            android:textColor="@color/accent"
+                            android:textSize="12sp" />
+
+                        <Button
+                            android:id="@+id/btnSeek10s"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="38dp"
+                            android:layout_marginHorizontal="4dp"
+                            android:layout_weight="1"
+                            android:text="10s"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+
+                        <Button
+                            android:id="@+id/btnSeek15s"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="38dp"
+                            android:layout_marginHorizontal="4dp"
+                            android:layout_weight="1"
+                            android:text="15s"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+
+                        <Button
+                            android:id="@+id/btnSeek30s"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="38dp"
+                            android:layout_marginStart="4dp"
+                            android:layout_weight="1"
+                            android:text="30s"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="14dp"
+                        android:background="@color/divider" />
+
+                    <!-- Quick Toggles in Settings Card -->
+                    <LinearLayout
+                        android:id="@+id/cardAdBlockSetting"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingVertical="6dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_shield"
+                            app:tint="@color/accent" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="100% Ad Blocker"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvAdBlockStatusDesc"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Block and skip all video and banner ads"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/switchAdBlock"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="8dp"
+                        android:background="@color/divider" />
+
+                    <LinearLayout
+                        android:id="@+id/cardDesktopSetting"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingVertical="6dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_desktop_windows"
+                            app:tint="@color/text_secondary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Desktop Browser Mode"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Render desktop layout for web pages"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/switchDesktop"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="false" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="8dp"
+                        android:background="@color/divider" />
+
+                    <!-- Clear Cache Option -->
+                    <LinearLayout
+                        android:id="@+id/cardClearCacheSetting"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingVertical="6dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_delete"
+                            app:tint="@color/text_secondary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Clear Browser Cache"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Free storage &amp; reset web sessions"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <Button
+                            android:id="@+id/btnClearCacheAction"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Clear"
+                            android:textColor="@color/accent" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- System Details Card -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="24dp"
+                    android:background="@drawable/bg_shortcut_card"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="System &amp; Audio Details"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="• Audio Focus: Foreground Service Locked (Never pauses)"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="• Car Display: Kia Seltos Secondary Display Mirror"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="• Ad Blocker: Active (Network + Script Interceptor)"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="• Build: Kia Browser v1.0.4 Release"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
             </LinearLayout>
         </ScrollView>
     </FrameLayout>
 
-    <!-- 3. Bottom Navigation Toolbar (Horizontal Scrolling) -->
-    <HorizontalScrollView
+    <!-- 3. Bottom Navigation Toolbar -->
+    <FrameLayout
         android:id="@+id/bottomBar"
         android:layout_width="0dp"
         android:layout_height="58dp"
         android:background="@color/surface_dark"
-        android:fillViewport="true"
-        android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <LinearLayout
-            android:id="@+id/bottomBarContainer"
-            android:layout_width="wrap_content"
+        <!-- A. Web / Media Playback Controls (Horizontal Scrolling, ONLY when NOT on Home) -->
+        <HorizontalScrollView
+            android:id="@+id/mediaControlsGroup"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center_vertical"
+            android:fillViewport="true"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="8dp">
+
+                <!-- 1. Play / Pause (First & Prominent) -->
+                <ImageButton
+                    android:id="@+id/btnNavPlayPause"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="4dp"
+                    android:background="@drawable/bg_circle_play"
+                    android:contentDescription="Play/Pause"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_play"
+                    app:tint="@color/background_dark" />
+
+                <!-- 2. Previous Video -->
+                <ImageButton
+                    android:id="@+id/btnNavPrevious"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Previous Track"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_skip_previous"
+                    app:tint="@color/text_primary" />
+
+                <!-- 3. Seek -5s -->
+                <Button
+                    android:id="@+id/btnNavRewind5"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:minWidth="48dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:paddingHorizontal="6dp"
+                    android:text="-5s"
+                    android:textColor="@color/accent"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <!-- 4. Seek +5s -->
+                <Button
+                    android:id="@+id/btnNavForward5"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:minWidth="48dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:paddingHorizontal="6dp"
+                    android:text="+5s"
+                    android:textColor="@color/accent"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <!-- 5. Next Video -->
+                <ImageButton
+                    android:id="@+id/btnNavNext"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Next Track"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_skip_next"
+                    app:tint="@color/text_primary" />
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="24dp"
+                    android:layout_marginHorizontal="6dp"
+                    android:background="@color/divider" />
+
+                <!-- 6. Home -->
+                <ImageButton
+                    android:id="@+id/btnNavHome"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Home"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_home"
+                    app:tint="@color/accent" />
+
+                <!-- 7. Web Back -->
+                <ImageButton
+                    android:id="@+id/btnNavBack"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Back"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/text_secondary" />
+
+                <!-- 8. Web Forward -->
+                <ImageButton
+                    android:id="@+id/btnNavForward"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Forward"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_arrow_forward"
+                    app:tint="@color/text_secondary" />
+
+                <!-- 9. Reload -->
+                <ImageButton
+                    android:id="@+id/btnNavReload"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Reload"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_refresh"
+                    app:tint="@color/text_secondary" />
+
+                <!-- 10. Desktop Mode Toggle -->
+                <ImageButton
+                    android:id="@+id/btnToggleDesktop"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Desktop Mode"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_desktop_windows"
+                    app:tint="@color/text_secondary" />
+
+                <!-- 11. AdBlock Shield Toggle -->
+                <ImageButton
+                    android:id="@+id/btnToggleAdBlock"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Ad Blocker"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_shield"
+                    app:tint="@color/accent" />
+
+                <!-- 12. Fullscreen Toggle -->
+                <ImageButton
+                    android:id="@+id/btnToggleFullscreen"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Fullscreen"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_fullscreen"
+                    app:tint="@color/text_secondary" />
+
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- B. Home Page Controls (ONLY shown when on Home Screen, NO player controls!) -->
+        <LinearLayout
+            android:id="@+id/homeControlsGroup"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
             android:orientation="horizontal"
-            android:paddingHorizontal="8dp">
+            android:paddingHorizontal="16dp"
+            android:visibility="visible">
 
-            <!-- 1. Play / Pause (First & Prominent) -->
-            <ImageButton
-                android:id="@+id/btnNavPlayPause"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="4dp"
-                android:background="@drawable/bg_circle_play"
-                android:contentDescription="Play/Pause"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_play"
-                app:tint="@color/background_dark" />
+            <!-- 1. Home Indicator -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <!-- 2. Previous Video -->
-            <ImageButton
-                android:id="@+id/btnNavPrevious"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Previous Track"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_skip_previous"
-                app:tint="@color/text_primary" />
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_home"
+                    app:tint="@color/accent" />
 
-            <!-- 3. Seek -5s -->
-            <Button
-                android:id="@+id/btnNavRewind5"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:minWidth="48dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="2dp"
-                android:paddingHorizontal="6dp"
-                android:text="-5s"
-                android:textColor="@color/accent"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Home"
+                    android:textColor="@color/accent"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
-            <!-- 4. Seek +5s -->
-            <Button
-                android:id="@+id/btnNavForward5"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:minWidth="48dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="2dp"
-                android:paddingHorizontal="6dp"
-                android:text="+5s"
-                android:textColor="@color/accent"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+            <!-- 2. AdBlock Status Button -->
+            <LinearLayout
+                android:id="@+id/btnHomeAdBlock"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <!-- 5. Next Video -->
-            <ImageButton
-                android:id="@+id/btnNavNext"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Next Track"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_skip_next"
-                app:tint="@color/text_primary" />
+                <ImageView
+                    android:id="@+id/ivHomeAdBlock"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_shield"
+                    app:tint="@color/accent" />
 
-            <!-- Divider -->
-            <View
-                android:layout_width="1dp"
-                android:layout_height="24dp"
-                android:layout_marginHorizontal="6dp"
-                android:background="@color/divider" />
+                <TextView
+                    android:id="@+id/tvHomeAdBlock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="AdBlock: ON"
+                    android:textColor="@color/text_primary"
+                    android:textSize="11sp" />
+            </LinearLayout>
 
-            <!-- 6. Home -->
-            <ImageButton
-                android:id="@+id/btnNavHome"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Home"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_home"
-                app:tint="@color/accent" />
+            <!-- 3. Desktop Mode Toggle -->
+            <LinearLayout
+                android:id="@+id/btnHomeDesktop"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <!-- 7. Web Back -->
-            <ImageButton
-                android:id="@+id/btnNavBack"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_arrow_back"
-                app:tint="@color/text_secondary" />
+                <ImageView
+                    android:id="@+id/ivHomeDesktop"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_desktop_windows"
+                    app:tint="@color/text_secondary" />
 
-            <!-- 8. Web Forward -->
-            <ImageButton
-                android:id="@+id/btnNavForward"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Forward"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_arrow_forward"
-                app:tint="@color/text_secondary" />
+                <TextView
+                    android:id="@+id/tvHomeDesktop"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Desktop"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
 
-            <!-- 9. Reload -->
-            <ImageButton
-                android:id="@+id/btnNavReload"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Reload"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_refresh"
-                app:tint="@color/text_secondary" />
+            <!-- 4. Clear Cache Button -->
+            <LinearLayout
+                android:id="@+id/btnHomeClearCache"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <!-- 10. Desktop Mode Toggle -->
-            <ImageButton
-                android:id="@+id/btnToggleDesktop"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Desktop Mode"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_desktop_windows"
-                app:tint="@color/text_secondary" />
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_delete"
+                    app:tint="@color/text_secondary" />
 
-            <!-- 11. AdBlock Shield Toggle -->
-            <ImageButton
-                android:id="@+id/btnToggleAdBlock"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Ad Blocker"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_shield"
-                app:tint="@color/accent" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Clear Cache"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
 
-            <!-- 12. Fullscreen Toggle -->
-            <ImageButton
-                android:id="@+id/btnToggleFullscreen"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginHorizontal="2dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Fullscreen"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_fullscreen"
-                app:tint="@color/text_secondary" />
+            <!-- 5. Voice Search Button -->
+            <LinearLayout
+                android:id="@+id/btnHomeVoiceSearch"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_mic"
+                    app:tint="@color/accent" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Voice"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
 
         </LinearLayout>
-    </HorizontalScrollView>
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
