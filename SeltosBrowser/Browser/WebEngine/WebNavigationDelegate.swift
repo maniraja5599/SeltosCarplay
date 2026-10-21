@@ -11,7 +11,7 @@ public protocol WebNavigationObserver: AnyObject {
     func webViewDidDetectMediaPlayback(title: String?, duration: Double?, isPlaying: Bool)
 }
 
-/// Navigation and UI delegate for WKWebView enforcing security and tracking progress
+/// Navigation and UI delegate for WKWebView enforcing security, media permissions, and tracking progress
 public final class WebNavigationDelegate: NSObject, WKNavigationDelegate, WKUIDelegate {
     public weak var observer: WebNavigationObserver?
     private var progressObservation: NSKeyValueObservation?
@@ -138,5 +138,17 @@ public final class WebNavigationDelegate: NSObject, WKNavigationDelegate, WKUIDe
             webView.load(navigationAction.request)
         }
         return nil
+    }
+
+    @available(iOS 15.0, *)
+    public func webView(
+        _ webView: WKWebView,
+        requestMediaCapturePermissionFor origin: WKSecurityOrigin,
+        initiatedByFrame frame: WKFrameInfo,
+        type: WKMediaCaptureType,
+        decisionHandler: @escaping (WKPermissionDecision) -> Void
+    ) {
+        // Grant microphone/camera permissions for web features (e.g., Google / YouTube voice search)
+        decisionHandler(.grant)
     }
 }

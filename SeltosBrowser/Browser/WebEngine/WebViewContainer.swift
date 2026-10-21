@@ -1,7 +1,7 @@
 import SwiftUI
 import WebKit
 
-/// SwiftUI wrapper around WKWebView configured for full media, inline playback, and security
+/// SwiftUI wrapper around WKWebView configured for full media, inline playback, security, and fullscreen
 public struct WebViewContainer: UIViewRepresentable {
     @ObservedObject var viewModel: BrowserViewModel
     let tabId: UUID
@@ -21,7 +21,10 @@ public struct WebViewContainer: UIViewRepresentable {
             configuration.preferences.isElementFullscreenEnabled = true
         }
 
-        // Add user script for media state observation
+        let isDesktop = viewModel.settingsManager.requestDesktopSites
+        configuration.defaultWebpagePreferences.preferredContentMode = isDesktop ? .desktop : .mobile
+
+        // Add user script for media state and fullscreen observation
         let userScript = WKUserScript(
             source: YouTubeHelper.mediaObserverScript,
             injectionTime: .atDocumentEnd,
@@ -40,6 +43,9 @@ public struct WebViewContainer: UIViewRepresentable {
         webView.allowsBackForwardNavigationGestures = true
         webView.scrollView.contentInsetAdjustmentBehavior = .automatic
 
+        let desktopUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
+        webView.customUserAgent = isDesktop ? desktopUA : nil
+
         // Attach delegate
         context.coordinator.navigationDelegate.attach(to: webView)
         context.coordinator.navigationDelegate.observer = context.coordinator
@@ -47,11 +53,18 @@ public struct WebViewContainer: UIViewRepresentable {
         // Register webView with viewModel for the active tab
         viewModel.registerWebView(webView, for: tabId)
 
+        // If target URL is already present, load it immediately upon creation
+        if let tab = viewModel.tabManager.tabs.first(where: { $0.id == tabId }),
+           let targetURL = tab.url,
+           targetURL.absoluteString != "about:blank" {
+            let request = URLRequest(url: targetURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30)
+            webView.load(request)
+        }
+
         return webView
     }
 
     public func updateUIView(_ uiView: WKWebView, context: Context) {
-        // Adjust custom user agent if desktop site mode changes
         let isDesktop = viewModel.settingsManager.requestDesktopSites
         let desktopUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
         uiView.customUserAgent = isDesktop ? desktopUA : nil
@@ -59,9 +72,11 @@ public struct WebViewContainer: UIViewRepresentable {
         // If tab URL is set and webView hasn't loaded it yet
         if let tab = viewModel.tabManager.tabs.first(where: { $0.id == tabId }),
            let targetURL = tab.url,
-           uiView.url != targetURL && !tab.isLoading && uiView.url == nil {
-            let request = URLRequest(url: targetURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30)
-            uiView.load(request)
+           targetURL.absoluteString != "about:blank" {
+            if uiView.url == nil || uiView.url?.absoluteString == "about:blank" || uiView.url != targetURL {
+                let request = URLRequest(url: targetURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30)
+                uiView.load(request)
+            }
         }
     }
 
@@ -105,15 +120,26 @@ public struct WebViewContainer: UIViewRepresentable {
         }
 
         public func webViewDidDetectMediaPlayback(title: String?, duration: Double?, isPlaying: Bool) {
-            // Handled via script message handler
+            // Handled via mediaBridge script message handler
         }
 
         // MARK: - WKScriptMessageHandler
 
         public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             guard message.name == "mediaBridge",
-                  let body = message.body as? [String: Any],
-                  let title = body["title"] as? String,
+                  let body = message.body as? [String: Any] else { return }
+
+            let messageType = body["type"] as? String ?? "state"
+
+            if messageType == "fullscreen" {
+                let isFullscreen = body["isFullscreen"] as? Bool ?? false
+                DispatchQueue.main.async {
+                    self.parent.viewModel.isFullscreenVideo = isFullscreen
+                }
+                return
+            }
+
+            guard let title = body["title"] as? String,
                   let duration = body["duration"] as? Double,
                   let currentTime = body["currentTime"] as? Double,
                   let isPlaying = body["isPlaying"] as? Bool else {

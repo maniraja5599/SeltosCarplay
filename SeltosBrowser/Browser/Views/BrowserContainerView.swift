@@ -10,49 +10,84 @@ public struct BrowserContainerView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            // Address / Search Bar Header
-            HStack(spacing: 12) {
-                AddressBarView(viewModel: viewModel)
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 4)
-            .padding(.bottom, 6)
-            .background(Color(.systemBackground).ignoresSafeArea(edges: .top))
+            // Address / Search Bar Header (hidden in full-screen video mode)
+            if !viewModel.isFullscreenVideo {
+                HStack(spacing: 12) {
+                    AddressBarView(viewModel: viewModel)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
+                .padding(.bottom, 6)
+                .background(Color(.systemBackground).ignoresSafeArea(edges: .top))
+                .transition(.move(edge: .top).combined(with: .opacity))
 
-            // Navigation Loading Progress Bar
-            if viewModel.activeTab.isLoading {
-                ProgressView(value: viewModel.activeTab.estimatedProgress, total: 1.0)
-                    .progressViewStyle(LinearProgressViewStyle())
-                    .tint(.accentColor)
-                    .frame(height: 2)
-            } else {
-                Divider()
+                // Navigation Loading Progress Bar
+                if viewModel.activeTab.isLoading {
+                    ProgressView(value: viewModel.activeTab.estimatedProgress, total: 1.0)
+                        .progressViewStyle(LinearProgressViewStyle())
+                        .tint(.accentColor)
+                        .frame(height: 2)
+                } else {
+                    Divider()
+                }
             }
 
-            // Main View Area: Home vs Error vs Web Content
+            // Main View Area: Persistent WebKit + Home Favorites Overlay
             ZStack {
+                // Persistent WKWebView for the active tab (keeps WebKit alive across navigation)
+                WebViewContainer(viewModel: viewModel, tabId: viewModel.tabManager.activeTabId)
+                    .opacity(viewModel.activeTab.isHome ? 0 : 1)
+                    .allowsHitTesting(!viewModel.activeTab.isHome)
+
                 if viewModel.activeTab.isHome {
                     HomeFavoritesView(viewModel: viewModel)
+                        .transition(.opacity)
                 } else if let error = viewModel.activeTab.errorMessage {
                     WebErrorView(
                         errorMessage: error,
                         onRetry: { viewModel.reload() },
                         onGoHome: { viewModel.goToHome() }
                     )
-                } else {
-                    WebViewContainer(viewModel: viewModel, tabId: viewModel.tabManager.activeTabId)
+                }
+
+                // Overlay control when video enters fullscreen
+                if viewModel.isFullscreenVideo {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                withAnimation {
+                                    viewModel.isFullscreenVideo = false
+                                }
+                            }) {
+                                Image(systemName: "arrow.down.right.and.arrow.up.left")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                                    .background(Color.black.opacity(0.65))
+                                    .clipShape(Circle())
+                            }
+                            .padding(.trailing, 16)
+                            .padding(.top, 16)
+                        }
+                        Spacer()
+                    }
+                    .transition(.opacity)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            Divider()
+            // Bottom Navigation Toolbar (hidden in full-screen video mode)
+            if !viewModel.isFullscreenVideo {
+                Divider()
 
-            // Bottom Navigation Toolbar
-            bottomToolbar
-                .padding(.horizontal, 12)
-                .padding(.top, 8)
-                .padding(.bottom, 6)
-                .background(Color(.systemBackground).ignoresSafeArea(edges: .bottom))
+                bottomToolbar
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 6)
+                    .background(Color(.systemBackground).ignoresSafeArea(edges: .bottom))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
         .background(Color(.systemBackground).ignoresSafeArea())
         .sheet(isPresented: $viewModel.showTabSwitcher) {
@@ -65,100 +100,83 @@ public struct BrowserContainerView: View {
             HistorySheetView(viewModel: viewModel)
         }
         .sheet(isPresented: $viewModel.showSettingsSheet) {
-            SettingsSheetView(viewModel: viewModel)
+            SettingsSheetView(viewModel: viewModel, onShareRequested: {
+                showShareSheet = true
+            })
         }
         .sheet(isPresented: $showShareSheet) {
             if let url = viewModel.activeTab.url {
                 ShareSheet(activityItems: [url])
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: viewModel.isFullscreenVideo)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.activeTab.isHome)
     }
 
     private var bottomToolbar: some View {
-        HStack(spacing: 4) {
-            // Back
+        HStack(spacing: 8) {
+            // 1. Back
             Button(action: {
                 viewModel.goBack()
             }) {
                 Image(systemName: "chevron.backward")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
             }
             .disabled(!viewModel.activeTab.canGoBack)
             .frame(maxWidth: .infinity)
 
-            // Forward
+            // 2. Forward
             Button(action: {
                 viewModel.goForward()
             }) {
                 Image(systemName: "chevron.forward")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
             }
             .disabled(!viewModel.activeTab.canGoForward)
             .frame(maxWidth: .infinity)
 
-            // Home
+            // 3. Home Button (returns instantly to Favorites)
             Button(action: {
-                viewModel.goToHome()
-            }) {
-                Image(systemName: "house")
-                    .font(.system(size: 17, weight: .semibold))
-            }
-            .frame(maxWidth: .infinity)
-
-            // Share Page
-            Button(action: {
-                if viewModel.activeTab.url != nil {
-                    showShareSheet = true
+                withAnimation {
+                    viewModel.goToHome()
                 }
             }) {
-                Image(systemName: "square.and.arrow.up")
-                    .font(.system(size: 17, weight: .semibold))
+                Image(systemName: viewModel.activeTab.isHome ? "house.fill" : "house")
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundColor(viewModel.activeTab.isHome ? .accentColor : .primary)
             }
-            .disabled(viewModel.activeTab.isHome)
             .frame(maxWidth: .infinity)
 
-            // Desktop / Mobile Quick Toggle
-            Button(action: {
-                viewModel.settingsManager.requestDesktopSites.toggle()
-                viewModel.reload()
-            }) {
-                Image(systemName: viewModel.settingsManager.requestDesktopSites ? "desktopcomputer" : "iphone")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(viewModel.settingsManager.requestDesktopSites ? .accentColor : .primary)
-            }
-            .disabled(viewModel.activeTab.isHome)
-            .frame(maxWidth: .infinity)
-
-            // Bookmarks
+            // 4. Bookmarks
             Button(action: {
                 viewModel.showBookmarksSheet = true
             }) {
-                Image(systemName: "book")
-                    .font(.system(size: 17, weight: .semibold))
+                Image(systemName: "book.fill")
+                    .font(.system(size: 18, weight: .semibold))
             }
             .frame(maxWidth: .infinity)
 
-            // Tab Switcher Button
+            // 5. Tab Switcher
             Button(action: {
                 viewModel.showTabSwitcher = true
             }) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 6)
                         .stroke(Color.primary, lineWidth: 1.8)
-                        .frame(width: 20, height: 20)
+                        .frame(width: 22, height: 22)
 
                     Text("\(viewModel.tabManager.tabs.count)")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                 }
             }
             .frame(maxWidth: .infinity)
 
-            // Settings
+            // 6. Settings
             Button(action: {
                 viewModel.showSettingsSheet = true
             }) {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 17, weight: .semibold))
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 19, weight: .semibold))
             }
             .frame(maxWidth: .infinity)
         }

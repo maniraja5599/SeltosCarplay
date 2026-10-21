@@ -17,13 +17,17 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.0</string>
+	<string>1.0.1</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Seltos Browser uses your motion state to detect if the vehicle is parked or in motion to follow driving safety standards.</string>
+	<string>Kia Browser uses your motion state to detect vehicle movement.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Kia Browser requires microphone access for voice search and web audio features.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Kia Browser uses speech recognition for voice search.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

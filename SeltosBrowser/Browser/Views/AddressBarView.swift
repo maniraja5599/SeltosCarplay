@@ -1,18 +1,15 @@
 import SwiftUI
 
-/// Address bar component supporting URL entry, search queries, HTTPS status, and quick reload
+/// Address bar component supporting URL entry, search queries, native Voice Search, HTTPS status, and quick reload
 public struct AddressBarView: View {
     @ObservedObject var viewModel: BrowserViewModel
+    @ObservedObject private var voiceSearch = VoiceSearchManager.shared
     @FocusState private var isFieldFocused: Bool
 
     public var body: some View {
         HStack(spacing: 8) {
             // Security or Search Icon
-            if isFieldFocused {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                    .font(.system(size: 15))
-            } else if viewModel.activeTab.isHome {
+            if isFieldFocused || viewModel.activeTab.isHome {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
                     .font(.system(size: 15))
@@ -27,16 +24,32 @@ public struct AddressBarView: View {
             }
 
             // Text Input
-            TextField("Search or enter website name", text: $viewModel.urlInputText)
-                .keyboardType(.webSearch)
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
-                .focused($isFieldFocused)
-                .font(.system(size: 15, weight: .regular))
-                .onSubmit {
-                    viewModel.load(input: viewModel.urlInputText)
-                    isFieldFocused = false
+            TextField(
+                voiceSearch.isListening ? "Listening... Speak now" : "Search or enter website name",
+                text: $viewModel.urlInputText
+            )
+            .keyboardType(.webSearch)
+            .autocapitalization(.none)
+            .disableAutocorrection(true)
+            .focused($isFieldFocused)
+            .font(.system(size: 15, weight: .regular))
+            .onSubmit {
+                viewModel.load(input: viewModel.urlInputText)
+                isFieldFocused = false
+            }
+
+            // Voice Search Microphone Button
+            Button(action: {
+                voiceSearch.toggleListening { transcribed in
+                    viewModel.urlInputText = transcribed
                 }
+            }) {
+                Image(systemName: voiceSearch.isListening ? "mic.fill" : "mic")
+                    .foregroundColor(voiceSearch.isListening ? .red : .secondary)
+                    .font(.system(size: 16, weight: voiceSearch.isListening ? .bold : .regular))
+                    .scaleEffect(voiceSearch.isListening ? 1.15 : 1.0)
+                    .animation(voiceSearch.isListening ? Animation.easeInOut(duration: 0.6).repeatForever(autoreverses: true) : .default, value: voiceSearch.isListening)
+            }
 
             // Clear or Reload / Stop Action Button
             if isFieldFocused && !viewModel.urlInputText.isEmpty {
@@ -71,7 +84,7 @@ public struct AddressBarView: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(isFieldFocused ? Color.accentColor : Color.clear, lineWidth: 1.5)
+                .stroke(voiceSearch.isListening ? Color.red : (isFieldFocused ? Color.accentColor : Color.clear), lineWidth: 1.5)
         )
         .animation(.easeInOut(duration: 0.2), value: isFieldFocused)
     }

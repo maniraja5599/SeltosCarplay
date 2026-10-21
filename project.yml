@@ -30,6 +30,8 @@ targets:
         CFBundleName: "Kia Browser"
         UILaunchStoryboardName: "LaunchScreen"
         NSLocationWhenInUseUsageDescription: "Kia Browser uses your motion state to detect vehicle movement."
+        NSMicrophoneUsageDescription: "Kia Browser requires microphone access for voice search and web audio features."
+        NSSpeechRecognitionUsageDescription: "Kia Browser uses speech recognition for voice search."
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
           NSAllowsArbitraryLoadsInWebContent: true
@@ -54,6 +56,7 @@ targets:
       - framework: AVFoundation.framework
       - framework: MediaPlayer.framework
       - framework: CoreLocation.framework
+      - framework: Speech.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.seltos.browser
