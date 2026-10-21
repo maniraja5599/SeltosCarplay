@@ -7,6 +7,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-and-package:
     name: Build & Package SeltosBrowser IPA
@@ -15,6 +18,8 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Select Xcode Version
         run: sudo xcode-select -s /Applications/Xcode_15.4.app
@@ -45,13 +50,16 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             2>&1 | tee build.log
 
-      - name: Upload Build Log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Xcodebuild-Log
-          path: build.log
-          if-no-files-found: ignore
+      - name: Commit Debug Log on Failure
+        if: failure()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B debug-log
+          cp build.log xcodebuild-debug.txt || true
+          git add xcodebuild-debug.txt
+          git commit -m "debug: xcodebuild failure log" || true
+          git push -f origin debug-log || true
 
       - name: Package Unsigned IPA for Sideloading
         run: |
