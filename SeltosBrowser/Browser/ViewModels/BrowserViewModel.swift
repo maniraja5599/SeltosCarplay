@@ -15,6 +15,7 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
     @Published public var showSettingsSheet: Bool = false
     @Published public var isFullscreenVideo: Bool = false
     @Published public var isReaderModeActive: Bool = false
+    @Published public var isHome: Bool = true
 
     public var tabManager = TabManager.shared
     public var bookmarkManager = BookmarkManager.shared
@@ -35,6 +36,14 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
         tabManager.$activeTabId
             .sink { [weak self] _ in
                 self?.syncActiveTabToAddressBar()
+            }
+            .store(in: &cancellables)
+
+        // Forward tab manager updates to trigger SwiftUI views reliably
+        tabManager.objectWillChange
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
             }
             .store(in: &cancellables)
     }
@@ -62,6 +71,7 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
             return
         }
 
+        isHome = false
         urlInputText = resolvedURL.absoluteString
         tabManager.updateActiveTab(
             url: resolvedURL,
@@ -74,10 +84,12 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
             let request = URLRequest(url: resolvedURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30)
             wv.load(request)
         }
+        objectWillChange.send()
     }
 
     public func loadBookmark(_ bookmark: Bookmark) {
         guard let url = bookmark.url else { return }
+        isHome = false
         load(input: url.absoluteString)
     }
 
@@ -109,6 +121,10 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
     public func goToHome() {
         activeWebView?.stopLoading()
         activeWebView?.load(URLRequest(url: URL(string: "about:blank")!))
+        isHome = true
+        urlInputText = ""
+        isFullscreenVideo = false
+        isReaderModeActive = false
         tabManager.updateActiveTab(
             title: "New Tab",
             url: nil,
@@ -119,18 +135,20 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
             errorMessage: nil,
             isSecure: true
         )
-        urlInputText = ""
-        isFullscreenVideo = false
-        isReaderModeActive = false
         nowPlayingManager.clearNowPlaying()
+        objectWillChange.send()
     }
 
     public func addNewTab(with url: URL? = nil) {
         _ = tabManager.createNewTab(with: url)
         syncActiveTabToAddressBar()
         if let url = url {
+            isHome = false
             load(input: url.absoluteString)
+        } else {
+            isHome = true
         }
+        objectWillChange.send()
     }
 
     public func closeTab(id: UUID) {
@@ -138,6 +156,8 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
         webViews.removeValue(forKey: id)
         tabManager.closeTab(id: id)
         syncActiveTabToAddressBar()
+        isHome = (activeTab.url == nil)
+        objectWillChange.send()
     }
 
     // MARK: - Delegate Event Handlers
@@ -153,6 +173,7 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
 
         // If about:blank finished loading, preserve clean home state
         if url == nil || url?.absoluteString == "about:blank" {
+            isHome = true
             tabManager.updateActiveTab(
                 title: "New Tab",
                 url: nil,
@@ -161,9 +182,11 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
                 errorMessage: nil,
                 isSecure: true
             )
+            objectWillChange.send()
             return
         }
 
+        isHome = false
         let isSecure = WebKitSecurityPolicy.isSecureURL(url)
         let pageTitle = title ?? url?.host ?? "Web Page"
 
@@ -180,6 +203,7 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
             urlInputText = urlString
             historyManager.addEntry(title: pageTitle, urlString: urlString)
         }
+        objectWillChange.send()
     }
 
     public func handleDidFailLoading(for tabId: UUID, error: Error) {
@@ -204,6 +228,7 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
             isLoading: false,
             errorMessage: userFriendlyMessage
         )
+        objectWillChange.send()
     }
 
     public func handleProgress(for tabId: UUID, progress: Double) {
@@ -238,6 +263,7 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
         } else {
             activeWebView?.evaluateJavaScript(YouTubeHelper.disableReaderModeScript, completionHandler: nil)
         }
+        objectWillChange.send()
     }
 
     public func toggleDesktopSite() {
@@ -249,6 +275,7 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
             wv.configuration.defaultWebpagePreferences.preferredContentMode = isDesktop ? .desktop : .mobile
             wv.reload()
         }
+        objectWillChange.send()
     }
 
     public func triggerVideoFullscreen() {
@@ -280,7 +307,6 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
     // MARK: - Privacy & Data Deletion
 
     public func clearAllBrowsingData(completion: @escaping () -> Void) {
-        // Clear WebKit data store (cookies, caches, databases)
         let dataStore = WKWebsiteDataStore.default()
         let dataTypes = WKWebsiteDataStore.allWebsiteDataTypes()
         let dateFrom = Date.distantPast

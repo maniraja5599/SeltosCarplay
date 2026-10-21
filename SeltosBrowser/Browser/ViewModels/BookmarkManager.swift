@@ -7,7 +7,7 @@ public final class BookmarkManager: ObservableObject {
 
     @Published public private(set) var bookmarks: [Bookmark] = []
     
-    private let fileName = "bookmarks_v2.json"
+    private let fileName = "bookmarks_v3.json"
     private let fileQueue = DispatchQueue(label: "com.seltosbrowser.bookmarks.queue", qos: .utility)
 
     public init() {
@@ -61,7 +61,6 @@ public final class BookmarkManager: ObservableObject {
     private func loadBookmarks() {
         let url = getFileURL()
         guard FileManager.default.fileExists(atPath: url.path) else {
-            // Populate rich streaming and browser defaults
             self.bookmarks = Self.defaultBookmarks
             saveBookmarks()
             return
@@ -117,6 +116,18 @@ public final class BookmarkManager: ObservableObject {
                 isFavorite: true
             ),
             Bookmark(
+                title: "JioCinema",
+                urlString: "https://www.jiocinema.com",
+                iconName: "play.circle.fill",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "Zee5",
+                urlString: "https://www.zee5.com",
+                iconName: "tv.and.mediabox.fill",
+                isFavorite: true
+            ),
+            Bookmark(
                 title: "Spotify",
                 urlString: "https://open.spotify.com",
                 iconName: "waveform",
@@ -129,15 +140,21 @@ public final class BookmarkManager: ObservableObject {
                 isFavorite: true
             ),
             Bookmark(
-                title: "Twitch",
-                urlString: "https://www.twitch.tv",
-                iconName: "tv.fill",
-                isFavorite: true
-            ),
-            Bookmark(
                 title: "YouTube Music",
                 urlString: "https://music.youtube.com",
                 iconName: "music.quarternote.3",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "Cricbuzz",
+                urlString: "https://m.cricbuzz.com",
+                iconName: "sportscourt.fill",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "Google Maps",
+                urlString: "https://maps.google.com",
+                iconName: "map.fill",
                 isFavorite: true
             ),
             Bookmark(
@@ -153,27 +170,39 @@ public final class BookmarkManager: ObservableObject {
                 isFavorite: true
             ),
             Bookmark(
+                title: "Instagram",
+                urlString: "https://www.instagram.com",
+                iconName: "camera.fill",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "X (Twitter)",
+                urlString: "https://x.com",
+                iconName: "at",
+                isFavorite: true
+            ),
+            Bookmark(
                 title: "Reddit",
                 urlString: "https://www.reddit.com",
                 iconName: "text.bubble.fill",
                 isFavorite: true
             ),
             Bookmark(
+                title: "Amazon",
+                urlString: "https://www.amazon.in",
+                iconName: "cart.fill",
+                isFavorite: true
+            ),
+            Bookmark(
+                title: "Fast.com",
+                urlString: "https://fast.com",
+                iconName: "speedometer",
+                isFavorite: true
+            ),
+            Bookmark(
                 title: "Wikipedia",
                 urlString: "https://en.m.wikipedia.org",
                 iconName: "book.fill",
-                isFavorite: true
-            ),
-            Bookmark(
-                title: "GitHub",
-                urlString: "https://github.com",
-                iconName: "chevron.left.forwardslash.chevron.right",
-                isFavorite: true
-            ),
-            Bookmark(
-                title: "DuckDuckGo",
-                urlString: "https://duckduckgo.com",
-                iconName: "shield.checkerboard",
                 isFavorite: true
             )
         ]

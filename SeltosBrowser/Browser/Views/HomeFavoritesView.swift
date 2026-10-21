@@ -1,58 +1,53 @@
 import SwiftUI
 
-/// Default home page displaying pinned favorites, shortcuts, and car connection status
+/// Default home page displaying pinned favorites, shortcuts, and custom logo badge
 public struct HomeFavoritesView: View {
     @ObservedObject var viewModel: BrowserViewModel
 
     private let columns = [
-        GridItem(.adaptive(minimum: 80, maximum: 100), spacing: 20)
+        GridItem(.adaptive(minimum: 78, maximum: 96), spacing: 18)
     ]
 
     public var body: some View {
         ScrollView {
-            VStack(spacing: 28) {
-                // Header Banner
-                VStack(spacing: 8) {
-                    Image(systemName: "car.side.front.open.fill")
-                        .font(.system(size: 44))
-                        .foregroundColor(.accentColor)
-
-                    Text("Kia Browser")
-                        .font(.title2)
-                        .fontWeight(.bold)
-
-                    Text("Secure browsing with CarPlay media integration")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+            VStack(spacing: 24) {
+                // Top Custom Logo Badge (No text)
+                VStack(spacing: 0) {
+                    Image("AppLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 86, height: 86)
+                        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                        .shadow(color: Color.blue.opacity(0.4), radius: 10, x: 0, y: 5)
                 }
-                .padding(.top, 36)
+                .padding(.top, 16)
 
-                // Favorites Section
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Favorites")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal, 24)
+                // Favorites Grid Section
+                VStack(alignment: .leading, spacing: 14) {
+                    Text("Favorites & Media")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 20)
 
-                    LazyVGrid(columns: columns, spacing: 24) {
+                    LazyVGrid(columns: columns, spacing: 20) {
                         ForEach(viewModel.bookmarkManager.favorites) { bookmark in
                             Button(action: {
                                 viewModel.loadBookmark(bookmark)
                             }) {
-                                VStack(spacing: 10) {
+                                VStack(spacing: 8) {
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 18, style: .continuous)
                                             .fill(Color(.secondarySystemBackground))
-                                            .frame(width: 64, height: 64)
+                                            .frame(width: 62, height: 62)
                                             .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 3)
 
                                         Image(systemName: bookmark.iconName)
-                                            .font(.system(size: 28))
+                                            .font(.system(size: 26))
                                             .foregroundColor(iconColor(for: bookmark.title))
                                     }
 
                                     Text(bookmark.title)
-                                        .font(.caption)
+                                        .font(.caption2)
                                         .fontWeight(.medium)
                                         .foregroundColor(.primary)
                                         .lineLimit(1)
@@ -61,25 +56,25 @@ public struct HomeFavoritesView: View {
                             .buttonStyle(ScaleButtonStyle())
                         }
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 20)
                 }
 
-                // In-Car Experience Tips
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "info.circle.fill")
+                // In-Car Audio & Steering Wheel Tips
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "car.side.fill")
                             .foregroundColor(.blue)
-                        Text("Vehicle Audio & CarPlay Info")
+                        Text("Kia Seltos CarPlay Audio Active")
                             .font(.subheadline)
                             .fontWeight(.semibold)
                     }
 
-                    Text("When connected to your Kia Seltos via USB, playing audio or YouTube media on this browser will stream directly through your car's audio system. You can control playback via steering wheel buttons and the CarPlay Now Playing screen.")
-                        .font(.footnote)
+                    Text("Connected via USB: Media audio streams directly through car speakers. Control playback using steering wheel buttons and Now Playing HUD.")
+                        .font(.caption)
                         .foregroundColor(.secondary)
-                        .lineSpacing(3)
+                        .lineSpacing(2)
                 }
-                .padding(16)
+                .padding(14)
                 .background(Color(.tertiarySystemBackground))
                 .cornerRadius(14)
                 .padding(.horizontal, 20)
@@ -93,13 +88,15 @@ public struct HomeFavoritesView: View {
     private func iconColor(for title: String) -> Color {
         switch title.lowercased() {
         case "youtube", "netflix", "youtube music": return .red
-        case "google", "prime video": return .blue
+        case "google", "prime video", "google maps": return .blue
         case "hotstar": return .indigo
-        case "spotify", "chatgpt": return .green
-        case "apple music": return .pink
-        case "twitch", "github": return .purple
-        case "duckduckgo", "reddit": return .orange
-        case "wikipedia": return .primary
+        case "jiocinema": return .pink
+        case "zee5": return .purple
+        case "spotify", "chatgpt", "cricbuzz": return .green
+        case "apple music", "instagram": return .pink
+        case "reddit", "amazon": return .orange
+        case "fast.com": return .teal
+        case "wikipedia", "x (twitter)": return .primary
         default: return .accentColor
         }
     }

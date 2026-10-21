@@ -34,12 +34,12 @@ public struct BrowserContainerView: View {
 
             // Main View Area: Persistent WebKit + Home Favorites Overlay
             ZStack {
-                // Persistent WKWebView for the active tab (keeps WebKit alive across navigation)
+                // Persistent WKWebView for active tab (keeps WebKit alive in memory)
                 WebViewContainer(viewModel: viewModel, tabId: viewModel.tabManager.activeTabId)
-                    .opacity(viewModel.activeTab.isHome ? 0 : 1)
-                    .allowsHitTesting(!viewModel.activeTab.isHome)
+                    .opacity(viewModel.isHome ? 0 : 1)
+                    .allowsHitTesting(!viewModel.isHome)
 
-                if viewModel.activeTab.isHome {
+                if viewModel.isHome {
                     HomeFavoritesView(viewModel: viewModel)
                         .transition(.opacity)
                 } else if let error = viewModel.activeTab.errorMessage {
@@ -110,7 +110,7 @@ public struct BrowserContainerView: View {
             }
         }
         .animation(.easeInOut(duration: 0.25), value: viewModel.isFullscreenVideo)
-        .animation(.easeInOut(duration: 0.2), value: viewModel.activeTab.isHome)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.isHome)
     }
 
     private var bottomToolbar: some View {
@@ -135,24 +135,25 @@ public struct BrowserContainerView: View {
             .disabled(!viewModel.activeTab.canGoForward)
             .frame(maxWidth: .infinity)
 
-            // 3. Home Button (returns instantly to Favorites)
+            // 3. Home Button (Direct instant return to Favorites Grid)
             Button(action: {
                 withAnimation {
                     viewModel.goToHome()
                 }
             }) {
-                Image(systemName: viewModel.activeTab.isHome ? "house.fill" : "house")
+                Image(systemName: viewModel.isHome ? "house.fill" : "house")
                     .font(.system(size: 19, weight: .semibold))
-                    .foregroundColor(viewModel.activeTab.isHome ? .accentColor : .primary)
+                    .foregroundColor(viewModel.isHome ? .accentColor : .primary)
             }
             .frame(maxWidth: .infinity)
 
-            // 4. Bookmarks
+            // 4. Desktop / Mobile View Mode Switcher
             Button(action: {
-                viewModel.showBookmarksSheet = true
+                viewModel.toggleDesktopSite()
             }) {
-                Image(systemName: "book.fill")
-                    .font(.system(size: 18, weight: .semibold))
+                Image(systemName: viewModel.settingsManager.requestDesktopSites ? "desktopcomputer" : "iphone")
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundColor(viewModel.settingsManager.requestDesktopSites ? .accentColor : .primary)
             }
             .frame(maxWidth: .infinity)
 

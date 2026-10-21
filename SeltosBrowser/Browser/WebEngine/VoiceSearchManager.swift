@@ -2,7 +2,7 @@ import Foundation
 import Speech
 import AVFoundation
 
-/// Coordinates native speech recognition and microphone input for voice search
+/// Coordinates native speech recognition and microphone input for Google voice search
 public final class VoiceSearchManager: ObservableObject {
     public static let shared = VoiceSearchManager()
 
@@ -14,20 +14,28 @@ public final class VoiceSearchManager: ObservableObject {
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
+    private var silenceTimer: Timer?
+    private var activeCompletion: ((String) -> Void)?
 
     public init() {
         speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
     }
 
-    public func toggleListening(onRecognized: @escaping (String) -> Void) {
+    public func toggleListening(onRecognized: @escaping (String) -> Void, onSubmit: @escaping (String) -> Void) {
         if isListening {
+            let finalQuery = transcribedText
             stopListening()
+            if !finalQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                onSubmit(finalQuery)
+            }
         } else {
-            startListening(onRecognized: onRecognized)
+            startListening(onRecognized: onRecognized, onSubmit: onSubmit)
         }
     }
 
-    public func startListening(onRecognized: @escaping (String) -> Void) {
+    public func startListening(onRecognized: @escaping (String) -> Void, onSubmit: @escaping (String) -> Void) {
+        self.activeCompletion = onSubmit
+
         SFSpeechRecognizer.requestAuthorization { [weak self] authStatus in
             DispatchQueue.main.async {
                 guard let self = self else { return }
@@ -36,7 +44,7 @@ public final class VoiceSearchManager: ObservableObject {
                     AVAudioSession.sharedInstance().requestRecordPermission { granted in
                         DispatchQueue.main.async {
                             if granted {
-                                self.beginRecording(onRecognized: onRecognized)
+                                self.beginRecording(onRecognized: onRecognized, onSubmit: onSubmit)
                             } else {
                                 self.statusMessage = "Microphone access denied"
                             }
@@ -51,9 +59,11 @@ public final class VoiceSearchManager: ObservableObject {
         }
     }
 
-    private func beginRecording(onRecognized: @escaping (String) -> Void) {
+    private func beginRecording(onRecognized: @escaping (String) -> Void, onSubmit: @escaping (String) -> Void) {
         recognitionTask?.cancel()
         recognitionTask = nil
+        silenceTimer?.invalidate()
+        silenceTimer = nil
 
         let audioSession = AVAudioSession.sharedInstance()
         do {
@@ -94,17 +104,34 @@ public final class VoiceSearchManager: ObservableObject {
                     self.transcribedText = text
                     self.statusMessage = text
                     onRecognized(text)
+
+                    // Reset silence timer on every new word spoken
+                    self.silenceTimer?.invalidate()
+                    self.silenceTimer = Timer.scheduledTimer(withTimeInterval: 1.8, repeats: false) { [weak self] _ in
+                        guard let self = self, self.isListening else { return }
+                        let query = self.transcribedText
+                        self.stopListening()
+                        if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            onSubmit(query)
+                        }
+                    }
                 }
             }
             if error != nil || (result?.isFinal ?? false) {
                 DispatchQueue.main.async {
+                    let query = self.transcribedText
                     self.stopListening()
+                    if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        onSubmit(query)
+                    }
                 }
             }
         }
     }
 
     public func stopListening() {
+        silenceTimer?.invalidate()
+        silenceTimer = nil
         if audioEngine.isRunning {
             audioEngine.stop()
             audioEngine.inputNode.removeTap(onBus: 0)

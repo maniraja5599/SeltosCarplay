@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Address bar component supporting URL entry, search queries, native Voice Search, HTTPS status, and quick reload
+/// Address bar component supporting URL entry, Google voice search, HTTPS status, and quick reload
 public struct AddressBarView: View {
     @ObservedObject var viewModel: BrowserViewModel
     @ObservedObject private var voiceSearch = VoiceSearchManager.shared
@@ -9,7 +9,7 @@ public struct AddressBarView: View {
     public var body: some View {
         HStack(spacing: 8) {
             // Security or Search Icon
-            if isFieldFocused || viewModel.activeTab.isHome {
+            if isFieldFocused || viewModel.isHome {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
                     .font(.system(size: 15))
@@ -25,7 +25,7 @@ public struct AddressBarView: View {
 
             // Text Input
             TextField(
-                voiceSearch.isListening ? "Listening... Speak now" : "Search or enter website name",
+                voiceSearch.isListening ? "Listening... Speak now" : "Search Google or type URL",
                 text: $viewModel.urlInputText
             )
             .keyboardType(.webSearch)
@@ -38,11 +38,18 @@ public struct AddressBarView: View {
                 isFieldFocused = false
             }
 
-            // Voice Search Microphone Button
+            // Voice Search Microphone Button (Google Voice Search)
             Button(action: {
-                voiceSearch.toggleListening { transcribed in
-                    viewModel.urlInputText = transcribed
-                }
+                voiceSearch.toggleListening(
+                    onRecognized: { transcribed in
+                        viewModel.urlInputText = transcribed
+                    },
+                    onSubmit: { query in
+                        viewModel.urlInputText = query
+                        viewModel.load(input: query)
+                        isFieldFocused = false
+                    }
+                )
             }) {
                 Image(systemName: voiceSearch.isListening ? "mic.fill" : "mic")
                     .foregroundColor(voiceSearch.isListening ? .red : .secondary)
@@ -68,7 +75,7 @@ public struct AddressBarView: View {
                         .foregroundColor(.primary)
                         .font(.system(size: 14, weight: .bold))
                 }
-            } else if !viewModel.activeTab.isHome {
+            } else if !viewModel.isHome {
                 Button(action: {
                     viewModel.reload()
                 }) {

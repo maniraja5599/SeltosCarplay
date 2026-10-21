@@ -1,7 +1,7 @@
 import SwiftUI
 import WebKit
 
-/// Settings view providing page actions (Share, Reader, Desktop), search engine configuration, privacy controls, and data clearing
+/// Settings view providing page actions, Bookmarks access, Desktop mode, and car integration status
 public struct SettingsSheetView: View {
     @ObservedObject var viewModel: BrowserViewModel
     @ObservedObject private var settings = SettingsManager.shared
@@ -21,8 +21,27 @@ public struct SettingsSheetView: View {
     public var body: some View {
         NavigationStack {
             Form {
+                // Bookmarks & Favorites Access (Moved to Settings as requested)
+                Section(header: Text("Bookmarks & Favorites")) {
+                    Button(action: {
+                        dismiss()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            viewModel.showBookmarksSheet = true
+                        }
+                    }) {
+                        HStack {
+                            Label("Open Bookmarks & Favorites", systemImage: "star.fill")
+                                .foregroundColor(.accentColor)
+                            Spacer()
+                            Image(systemName: "chevron.forward")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+
                 // Current Page Quick Actions (Available when a website is open)
-                if !viewModel.activeTab.isHome {
+                if !viewModel.isHome {
                     Section(header: Text("Current Page")) {
                         // 1. Share
                         Button(action: {
@@ -72,7 +91,7 @@ public struct SettingsSheetView: View {
                                 showBookmarkAddedAlert = true
                             }
                         }) {
-                            Label("Add to Bookmarks", systemImage: "star.fill")
+                            Label("Add Page to Bookmarks", systemImage: "bookmark.fill")
                                 .foregroundColor(.primary)
                         }
                     }
@@ -132,14 +151,26 @@ public struct SettingsSheetView: View {
                     .disabled(isClearingData)
                 }
 
-                // About & Vehicle Integration
+                // About & Custom Logo
                 Section(header: Text("About Kia Browser")) {
-                    HStack {
-                        Text("Application")
-                        Spacer()
-                        Text("Kia Browser")
-                            .foregroundColor(.secondary)
+                    HStack(spacing: 16) {
+                        Image("AppLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 54, height: 54)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .shadow(color: Color.blue.opacity(0.3), radius: 6, x: 0, y: 3)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Kia Browser")
+                                .font(.headline)
+                            Text("Electric Edition • Build 3")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
+                    .padding(.vertical, 4)
+
                     HStack {
                         Text("Target Vehicle")
                         Spacer()
@@ -153,9 +184,9 @@ public struct SettingsSheetView: View {
                             .foregroundColor(.secondary)
                     }
                     HStack {
-                        Text("Version")
+                        Text("Search Provider")
                         Spacer()
-                        Text("1.0.1 (Build 2)")
+                        Text("Google Voice & Web")
                             .foregroundColor(.secondary)
                     }
                 }

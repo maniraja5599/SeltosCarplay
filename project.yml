@@ -28,6 +28,8 @@ targets:
       properties:
         CFBundleDisplayName: "Kia Browser"
         CFBundleName: "Kia Browser"
+        CFBundleShortVersionString: "1.0.2"
+        CFBundleVersion: "3"
         UILaunchStoryboardName: "LaunchScreen"
         NSLocationWhenInUseUsageDescription: "Kia Browser uses your motion state to detect vehicle movement."
         NSMicrophoneUsageDescription: "Kia Browser requires microphone access for voice search and web audio features."
