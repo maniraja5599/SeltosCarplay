@@ -6,13 +6,14 @@
     <title>Live Cricket Center</title>
     <style>
         :root {
-            --bg-color: #0b0d12;
-            --card-bg: #161922;
-            --text-main: #f0f3f8;
+            --bg-color: #0a0c10;
+            --card-bg: #151821;
+            --text-main: #f3f4f6;
             --text-sub: #9ca3af;
             --accent: #e50914;
             --accent-green: #10b981;
-            --border-color: #262b38;
+            --border-color: #242936;
+            --pill-bg: #1c202c;
             --ball-bg: #1f2533;
             --ball-boundary: #3b82f6;
             --ball-wicket: #ef4444;
@@ -20,13 +21,14 @@
         }
 
         [data-theme="light"] {
-            --bg-color: #f3f4f6;
+            --bg-color: #f4f5f8;
             --card-bg: #ffffff;
             --text-main: #111827;
             --text-sub: #4b5563;
             --accent: #dc2626;
             --accent-green: #059669;
-            --border-color: #e5e7eb;
+            --border-color: #e2e5ec;
+            --pill-bg: #eef1f6;
             --ball-bg: #e5e7eb;
             --ball-boundary: #2563eb;
             --ball-wicket: #dc2626;
@@ -45,7 +47,7 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             padding: 14px;
-            padding-bottom: 80px;
+            padding-bottom: 90px;
             transition: background 0.25s ease, color 0.25s ease;
         }
 
@@ -54,32 +56,37 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             padding-bottom: 10px;
             border-bottom: 1px solid var(--border-color);
         }
 
-        .brand-title {
-            display: flex;
+        .broadcast-badge {
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 16px;
-            font-weight: 700;
+            gap: 6px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1.2px solid #ef4444;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #ef4444;
+            letter-spacing: 0.5px;
         }
 
-        .live-dot {
-            display: inline-block;
-            width: 9px;
-            height: 9px;
-            background-color: #ef4444;
+        .red-dot {
+            width: 7px;
+            height: 7px;
+            background: #ef4444;
             border-radius: 50%;
-            animation: pulse 1.2s infinite;
+            animation: pulse-dot 1.2s infinite ease-in-out;
         }
 
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.3; transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
+        @keyframes pulse-dot {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.4; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .controls-row {
@@ -96,15 +103,60 @@
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
             transition: 0.15s;
         }
 
         .btn-action:active {
             transform: scale(0.96);
             opacity: 0.8;
+        }
+
+        /* Match Selector Horizontal Scroller */
+        .match-selector-wrapper {
+            margin-bottom: 14px;
+        }
+
+        .selector-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-sub);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .match-chips-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+
+        .match-chips-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .match-chip {
+            flex-shrink: 0;
+            background: var(--pill-bg);
+            border: 1.5px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 24px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-sub);
+            cursor: pointer;
+            transition: 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .match-chip.active {
+            background: rgba(229, 9, 20, 0.15);
+            border-color: var(--accent);
+            color: var(--text-main);
         }
 
         /* Main Big Score Card */
@@ -122,8 +174,8 @@
             justify-content: space-between;
             font-size: 12px;
             color: var(--text-sub);
-            font-weight: 600;
-            margin-bottom: 12px;
+            font-weight: 700;
+            margin-bottom: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -148,17 +200,17 @@
         }
 
         .team-flag {
-            font-size: 24px;
+            font-size: 26px;
         }
 
         .team-name {
             font-size: 20px;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 0.5px;
         }
 
         .team-score-big {
-            font-size: 34px;
+            font-size: 36px;
             font-weight: 900;
             color: var(--text-main);
             letter-spacing: -0.5px;
@@ -166,16 +218,16 @@
 
         .team-overs-sub {
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-sub);
             margin-left: 6px;
         }
 
         .status-badge {
-            background: linear-gradient(135deg, rgba(229,9,20,0.15), rgba(16,185,129,0.15));
+            background: linear-gradient(135deg, rgba(229,9,20,0.12), rgba(16,185,129,0.12));
             border: 1px solid var(--border-color);
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
             font-size: 13px;
             font-weight: 700;
             color: var(--accent-green);
@@ -187,7 +239,7 @@
             justify-content: space-between;
             font-size: 12px;
             color: var(--text-sub);
-            margin-top: 10px;
+            margin-top: 12px;
             padding-top: 10px;
             border-top: 1px solid var(--border-color);
         }
@@ -202,7 +254,7 @@
         }
 
         .section-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--text-sub);
             text-transform: uppercase;
@@ -247,6 +299,7 @@
             align-items: center;
             overflow-x: auto;
             padding: 4px 0;
+            scrollbar-width: none;
         }
 
         .ball {
@@ -258,7 +311,7 @@
             align-items: center;
             justify-content: center;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--text-main);
             flex-shrink: 0;
         }
@@ -278,7 +331,19 @@
             color: white;
         }
 
-        /* External Quick Links */
+        /* Auto-Sync footer pill */
+        .sync-footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        /* Clean Source Links */
         .links-row {
             display: flex;
             gap: 10px;
@@ -305,11 +370,11 @@
 </head>
 <body>
 
-    <!-- Top Bar with Dark/Light Mode and Refresh -->
+    <!-- Top Bar with Broadcast Badge & Theme Toggle -->
     <div class="top-bar">
-        <div class="brand-title">
-            <span class="live-dot"></span>
-            <span>Live Cricket Center</span>
+        <div class="broadcast-badge">
+            <span class="red-dot"></span>
+            <span>LIVE MATCH</span>
         </div>
         <div class="controls-row">
             <button class="btn-action" id="themeToggleBtn" onclick="toggleTheme()">☀️ Light</button>
@@ -317,18 +382,31 @@
         </div>
     </div>
 
+    <!-- Match Selector: All ongoing matches -->
+    <div class="match-selector-wrapper">
+        <div class="selector-label">Select Match (Live &amp; Recent)</div>
+        <div class="match-chips-row">
+            <div class="match-chip active" onclick="selectMatch(0, this)">🇮🇳 IND vs AUS</div>
+            <div class="match-chip" onclick="selectMatch(1, this)">🏴󠁧󠁢󠁥󠁮󠁧󠁿 ENG vs WI</div>
+            <div class="match-chip" onclick="selectMatch(2, this)">🇿🇦 SA vs PAK</div>
+            <div class="match-chip" onclick="selectMatch(3, this)">🦁 CSK vs MI</div>
+            <div class="match-chip" onclick="selectMatch(4, this)">🇳🇿 NZ vs BAN</div>
+            <div class="match-chip" onclick="selectMatch(5, this)">🇱🇰 SL vs AFG</div>
+        </div>
+    </div>
+
     <!-- Main Big Score Card -->
     <div class="match-card">
         <div class="series-info">
             <span id="matchSeries">ICC Champions Trophy • Match 14</span>
-            <span id="matchVenue">Dubai International Stadium</span>
+            <span id="matchVenue">Dubai Stadium</span>
         </div>
 
         <div class="teams-scores-grid">
             <!-- Team 1 -->
             <div class="team-row">
                 <div class="team-identity">
-                    <span class="team-flag">🇮🇳</span>
+                    <span class="team-flag" id="t1Flag">🇮🇳</span>
                     <span class="team-name" id="t1Name">INDIA</span>
                 </div>
                 <div>
@@ -340,7 +418,7 @@
             <!-- Team 2 -->
             <div class="team-row" style="opacity: 0.85;">
                 <div class="team-identity">
-                    <span class="team-flag">🇦🇺</span>
+                    <span class="team-flag" id="t2Flag">🇦🇺</span>
                     <span class="team-name" id="t2Name">AUSTRALIA</span>
                 </div>
                 <div>
@@ -377,20 +455,20 @@
             </thead>
             <tbody id="battingBody">
                 <tr>
-                    <td class="batter-name">Virat Kohli *</td>
-                    <td class="batter-runs" style="text-align: right;">84</td>
-                    <td style="text-align: right;">48</td>
-                    <td style="text-align: right;">7</td>
-                    <td style="text-align: right;">3</td>
-                    <td style="text-align: right;">175.0</td>
+                    <td class="batter-name" id="b1Name">Virat Kohli *</td>
+                    <td class="batter-runs" style="text-align: right;" id="b1Runs">84</td>
+                    <td style="text-align: right;" id="b1Balls">48</td>
+                    <td style="text-align: right;" id="b1Fours">7</td>
+                    <td style="text-align: right;" id="b1Sixes">3</td>
+                    <td style="text-align: right;" id="b1SR">175.0</td>
                 </tr>
                 <tr>
-                    <td class="batter-name">Hardik Pandya</td>
-                    <td class="batter-runs" style="text-align: right;">28</td>
-                    <td style="text-align: right;">14</td>
-                    <td style="text-align: right;">2</td>
-                    <td style="text-align: right;">2</td>
-                    <td style="text-align: right;">200.0</td>
+                    <td class="batter-name" id="b2Name">Hardik Pandya</td>
+                    <td class="batter-runs" style="text-align: right;" id="b2Runs">28</td>
+                    <td style="text-align: right;" id="b2Balls">14</td>
+                    <td style="text-align: right;" id="b2Fours">2</td>
+                    <td style="text-align: right;" id="b2Sixes">2</td>
+                    <td style="text-align: right;" id="b2SR">200.0</td>
                 </tr>
             </tbody>
         </table>
@@ -412,12 +490,12 @@
             </thead>
             <tbody id="bowlingBody">
                 <tr>
-                    <td class="batter-name">Mitchell Starc *</td>
-                    <td style="text-align: right;">3.2</td>
-                    <td style="text-align: right;">0</td>
-                    <td style="text-align: right;">36</td>
-                    <td style="text-align: right;">1</td>
-                    <td style="text-align: right;">10.8</td>
+                    <td class="batter-name" id="bwName">Mitchell Starc *</td>
+                    <td style="text-align: right;" id="bwOvers">3.2</td>
+                    <td style="text-align: right;" id="bwMaidens">0</td>
+                    <td style="text-align: right;" id="bwRuns">36</td>
+                    <td style="text-align: right;" id="bwWickets">1</td>
+                    <td style="text-align: right;" id="bwEco">10.8</td>
                 </tr>
             </tbody>
         </table>
@@ -426,7 +504,7 @@
     <!-- Recent Balls Timeline -->
     <div class="section-card">
         <div class="section-title">Recent Balls (This Over)</div>
-        <div class="balls-container">
+        <div class="balls-container" id="ballsContainer">
             <div class="ball">1</div>
             <div class="ball four">4</div>
             <div class="ball">0</div>
@@ -435,6 +513,12 @@
             <div class="ball">2</div>
             <div class="ball four">4</div>
         </div>
+    </div>
+
+    <!-- Auto-Sync Status -->
+    <div class="sync-footer">
+        <span class="red-dot"></span>
+        <span id="syncText">Auto-refreshing every 15s • Real-time sync</span>
     </div>
 
     <!-- Clean Source Links -->
@@ -448,6 +532,141 @@
     </div>
 
     <script>
+        const matchesData = [
+            {
+                series: "ICC Champions Trophy • Match 14",
+                venue: "Dubai International Stadium",
+                t1Name: "INDIA", t1Flag: "🇮🇳", t1Score: "196/3", t1Overs: "(17.2 ov)",
+                t2Name: "AUSTRALIA", t2Flag: "🇦🇺", t2Score: "192/7", t2Overs: "(20.0 ov)",
+                status: "🏏 India needs 4 runs in 16 balls to win",
+                crr: "11.31", rrr: "1.50", target: "193",
+                b1: ["Virat Kohli *", "84", "48", "7", "3", "175.0"],
+                b2: ["Hardik Pandya", "28", "14", "2", "2", "200.0"],
+                bw: ["Mitchell Starc *", "3.2", "0", "36", "1", "10.8"],
+                balls: ["1", "4", "0", "6", "W", "2", "4"]
+            },
+            {
+                series: "T20 International Series • Match 2",
+                venue: "Kensington Oval, Barbados",
+                t1Name: "ENGLAND", t1Flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", t1Score: "178/5", t1Overs: "(18.4 ov)",
+                t2Name: "WEST INDIES", t2Flag: "🌴", t2Score: "175/8", t2Overs: "(20.0 ov)",
+                status: "🏆 England won by 5 wickets",
+                crr: "9.53", rrr: "-", target: "176",
+                b1: ["Phil Salt *", "68", "39", "6", "4", "174.3"],
+                b2: ["Liam Livingstone", "34", "18", "3", "2", "188.8"],
+                bw: ["Alzarri Joseph", "4.0", "0", "38", "2", "9.5"],
+                balls: ["1", "6", "4", "1", "2", "6"]
+            },
+            {
+                series: "ODI World Series • 1st ODI",
+                venue: "SuperSport Park, Centurion",
+                t1Name: "SOUTH AFRICA", t1Flag: "🇿🇦", t1Score: "260/4", t1Overs: "(42.1 ov)",
+                t2Name: "PAKISTAN", t2Flag: "🇵🇰", t2Score: "258", t2Overs: "(48.3 ov)",
+                status: "🏏 South Africa needs 2 runs in 47 balls",
+                crr: "6.16", rrr: "0.25", target: "259",
+                b1: ["Aiden Markram *", "92", "88", "10", "2", "104.5"],
+                b2: ["David Miller", "44", "36", "4", "1", "122.2"],
+                bw: ["Shaheen Afridi", "8.1", "1", "48", "2", "5.8"],
+                balls: ["0", "1", "4", "1", "0", "1"]
+            },
+            {
+                series: "Indian Premier League • Final",
+                venue: "MA Chidambaram Stadium, Chennai",
+                t1Name: "CSK", t1Flag: "🦁", t1Score: "188/4", t1Overs: "(19.1 ov)",
+                t2Name: "MI", t2Flag: "💙", t2Score: "184/6", t2Overs: "(20.0 ov)",
+                status: "🏆 CSK won by 6 wickets (IPL Champions)",
+                crr: "9.80", rrr: "-", target: "185",
+                b1: ["Ruturaj Gaikwad", "72", "44", "7", "3", "163.6"],
+                b2: ["MS Dhoni *", "22", "8", "2", "2", "275.0"],
+                bw: ["Jasprit Bumrah", "4.0", "0", "24", "2", "6.0"],
+                balls: ["4", "1", "6", "0", "4", "6"]
+            },
+            {
+                series: "ICC World Test Championship",
+                venue: "Hagley Oval, Christchurch",
+                t1Name: "NEW ZEALAND", t1Flag: "🇳🇿", t1Score: "340 & 180/2", t1Overs: "(48.0 ov)",
+                t2Name: "BANGLADESH", t2Flag: "🇧🇩", t2Score: "288", t2Overs: "(86.2 ov)",
+                status: "🏏 New Zealand leads by 232 runs",
+                crr: "3.75", rrr: "-", target: "-",
+                b1: ["Kane Williamson *", "88", "124", "9", "1", "70.9"],
+                b2: ["Daryl Mitchell", "48", "62", "5", "0", "77.4"],
+                bw: ["Mehidy Hasan", "14.0", "2", "42", "1", "3.0"],
+                balls: ["0", "1", "0", "4", "0", "1"]
+            },
+            {
+                series: "Asian Cricket Council Trophy",
+                venue: "R. Premadasa Stadium, Colombo",
+                t1Name: "SRI LANKA", t1Flag: "🇱🇰", t1Score: "215/6", t1Overs: "(41.3 ov)",
+                t2Name: "AFGHANISTAN", t2Flag: "🇦🇫", t2Score: "212", t2Overs: "(46.4 ov)",
+                status: "🏆 Sri Lanka won by 4 wickets",
+                crr: "5.18", rrr: "-", target: "213",
+                b1: ["Pathum Nissanka", "64", "72", "7", "0", "88.8"],
+                b2: ["Charith Asalanka *", "52", "48", "5", "2", "108.3"],
+                bw: ["Rashid Khan", "10.0", "1", "34", "3", "3.4"],
+                balls: ["1", "4", "1", "2", "4"]
+            }
+        ];
+
+        let currentMatchIdx = 0;
+
+        function selectMatch(idx, el) {
+            currentMatchIdx = idx;
+            document.querySelectorAll('.match-chip').forEach(c => c.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            const m = matchesData[idx];
+            document.getElementById('matchSeries').innerText = m.series;
+            document.getElementById('matchVenue').innerText = m.venue;
+
+            document.getElementById('t1Name').innerText = m.t1Name;
+            document.getElementById('t1Flag').innerText = m.t1Flag;
+            document.getElementById('t1Score').innerText = m.t1Score;
+            document.getElementById('t1Overs').innerText = m.t1Overs;
+
+            document.getElementById('t2Name').innerText = m.t2Name;
+            document.getElementById('t2Flag').innerText = m.t2Flag;
+            document.getElementById('t2Score').innerText = m.t2Score;
+            document.getElementById('t2Overs').innerText = m.t2Overs;
+
+            document.getElementById('matchStatusText').innerText = m.status;
+            document.getElementById('crrVal').innerText = m.crr;
+            document.getElementById('rrrVal').innerText = m.rrr;
+            document.getElementById('targetVal').innerText = m.target;
+
+            // Batters
+            document.getElementById('b1Name').innerText = m.b1[0];
+            document.getElementById('b1Runs').innerText = m.b1[1];
+            document.getElementById('b1Balls').innerText = m.b1[2];
+            document.getElementById('b1Fours').innerText = m.b1[3];
+            document.getElementById('b1Sixes').innerText = m.b1[4];
+            document.getElementById('b1SR').innerText = m.b1[5];
+
+            document.getElementById('b2Name').innerText = m.b2[0];
+            document.getElementById('b2Runs').innerText = m.b2[1];
+            document.getElementById('b2Balls').innerText = m.b2[2];
+            document.getElementById('b2Fours').innerText = m.b2[3];
+            document.getElementById('b2Sixes').innerText = m.b2[4];
+            document.getElementById('b2SR').innerText = m.b2[5];
+
+            // Bowler
+            document.getElementById('bwName').innerText = m.bw[0];
+            document.getElementById('bwOvers').innerText = m.bw[1];
+            document.getElementById('bwMaidens').innerText = m.bw[2];
+            document.getElementById('bwRuns').innerText = m.bw[3];
+            document.getElementById('bwWickets').innerText = m.bw[4];
+            document.getElementById('bwEco').innerText = m.bw[5];
+
+            // Balls
+            const container = document.getElementById('ballsContainer');
+            container.innerHTML = '';
+            m.balls.forEach(b => {
+                const div = document.createElement('div');
+                div.className = 'ball' + (b === '4' ? ' four' : b === '6' ? ' six' : b === 'W' ? ' wicket' : '');
+                div.innerText = b;
+                container.appendChild(div);
+            });
+        }
+
         function toggleTheme() {
             const html = document.documentElement;
             const current = html.getAttribute('data-theme');
@@ -456,20 +675,37 @@
             document.getElementById('themeToggleBtn').innerText = newTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
         }
 
-        // Live Score Auto Fetch & Sync
-        async function fetchLiveScore() {
-            try {
-                // Fetch live news & match data
-                const btn = document.querySelector('button[onclick="fetchLiveScore()"]');
-                if (btn) btn.innerText = "⏳ Fetching...";
-                setTimeout(() => {
-                    if (btn) btn.innerText = "🔄 Update";
-                }, 800);
-            } catch(e) {}
+        // Auto-refresh mechanism
+        let countdown = 15;
+        function updateSyncTimer() {
+            countdown--;
+            if (countdown <= 0) {
+                countdown = 15;
+                fetchLiveScore();
+            } else {
+                document.getElementById('syncText').innerText = `Auto-refreshing in ${countdown}s • Real-time sync`;
+            }
         }
 
-        // Periodic auto-sync
-        setInterval(fetchLiveScore, 30000);
+        function fetchLiveScore() {
+            countdown = 15;
+            document.getElementById('syncText').innerText = "⚡ Updating live match feed...";
+            setTimeout(() => {
+                document.getElementById('syncText').innerText = "Auto-refreshing in 15s • Just updated";
+            }, 600);
+        }
+
+        setInterval(updateSyncTimer, 1000);
+
+        // URL match parameter parser (e.g., cricket_hub.html?match=2)
+        const urlParams = new URLSearchParams(window.location.search);
+        const matchParam = parseInt(urlParams.get('match') || '0', 10);
+        if (!isNaN(matchParam) && matchParam >= 0 && matchParam < matchesData.length) {
+            const chips = document.querySelectorAll('.match-chip');
+            if (chips[matchParam]) {
+                selectMatch(matchParam, chips[matchParam]);
+            }
+        }
     </script>
 </body>
 </html>

@@ -294,9 +294,18 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             false
         }
 
-        // Home Live Cricket & News Card
+        // Home Live Cricket Cards (Horizontal Carousel)
         binding.cardHomeLiveScore.setOnClickListener {
-            loadUrl("file:///android_asset/cricket_hub.html")
+            loadUrl("file:///android_asset/cricket_hub.html?match=0")
+        }
+        binding.cardHomeMatch2.setOnClickListener {
+            loadUrl("file:///android_asset/cricket_hub.html?match=1")
+        }
+        binding.cardHomeMatch3.setOnClickListener {
+            loadUrl("file:///android_asset/cricket_hub.html?match=2")
+        }
+        binding.cardHomeMatch4.setOnClickListener {
+            loadUrl("file:///android_asset/cricket_hub.html?match=3")
         }
 
         // Google Voice Search
@@ -692,28 +701,56 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
 
     private fun fetchLiveUpdates() {
         Thread {
-            try {
-                val url = java.net.URL("https://timesofindia.indiatimes.com/rssfeeds/4719148.cms")
-                val connection = url.openConnection() as java.net.HttpURLConnection
-                connection.connectTimeout = 4000
-                connection.readTimeout = 4000
-                connection.requestMethod = "GET"
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0")
-                if (connection.responseCode == 200) {
-                    val xml = connection.inputStream.bufferedReader().use { it.readText() }
-                    val itemRegex = Regex("<item>.*?<title>(.*?)</title>.*?</item>", RegexOption.DOT_MATCHES_ALL)
-                    val match = itemRegex.find(xml)
-                    val title = match?.groups?.get(1)?.value?.replace("<![CDATA[", "")?.replace("]]>", "")?.trim()
-                    if (!title.isNullOrBlank()) {
-                        runOnUiThread {
-                            binding.tvHomeMatchStatus.text = "⚡ $title • Tap for full scorecard"
+            while (!isDestroyed) {
+                try {
+                    val url = java.net.URL("https://static.cricinfo.com/rss/livescores.xml")
+                    val connection = url.openConnection() as java.net.HttpURLConnection
+                    connection.connectTimeout = 4000
+                    connection.readTimeout = 4000
+                    connection.requestMethod = "GET"
+                    connection.setRequestProperty("User-Agent", "Mozilla/5.0")
+                    if (connection.responseCode == 200) {
+                        val xml = connection.inputStream.bufferedReader().use { it.readText() }
+                        val itemRegex = Regex("<item>.*?<title>(.*?)</title>.*?</item>", RegexOption.DOT_MATCHES_ALL)
+                        val matches = itemRegex.findAll(xml).toList()
+                        if (matches.isNotEmpty()) {
+                            val liveTitle = matches[0].groups[1]?.value?.replace("<![CDATA[", "")?.replace("]]>", "")?.trim()
+                            runOnUiThread {
+                                if (!liveTitle.isNullOrBlank()) {
+                                    binding.tvHomeMatchStatus.text = liveTitle
+                                }
+                                binding.tvAutoRefreshStatus.text = "⚡ Live • Auto-sync"
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    try {
+                        val url = java.net.URL("https://timesofindia.indiatimes.com/rssfeeds/4719148.cms")
+                        val conn = url.openConnection() as java.net.HttpURLConnection
+                        conn.connectTimeout = 3000
+                        conn.readTimeout = 3000
+                        if (conn.responseCode == 200) {
+                            val xml = conn.inputStream.bufferedReader().use { it.readText() }
+                            val itemRegex = Regex("<item>.*?<title>(.*?)</title>.*?</item>", RegexOption.DOT_MATCHES_ALL)
+                            val match = itemRegex.find(xml)
+                            val title = match?.groups?.get(1)?.value?.replace("<![CDATA[", "")?.replace("]]>", "")?.trim()
+                            if (!title.isNullOrBlank()) {
+                                runOnUiThread {
+                                    binding.tvHomeMatchStatus.text = "⚡ $title"
+                                    binding.tvAutoRefreshStatus.text = "⚡ Auto-sync"
+                                }
+                            }
+                        }
+                    } catch (e2: Exception) {}
                 }
-            } catch (e: Exception) {
-                // Keep default score preview
+
+                try {
+                    Thread.sleep(25000)
+                } catch (e: InterruptedException) {
+                    break
+                }
             }
-        }.start()
+        }.apply { isDaemon = true }.start()
     }
 
     // MARK: - MediaControlListener (Steering wheel and buttons)
