@@ -90,7 +90,20 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
     public func loadBookmark(_ bookmark: Bookmark) {
         guard let url = bookmark.url else { return }
         isHome = false
-        load(input: url.absoluteString)
+        urlInputText = url.absoluteString
+        tabManager.updateActiveTab(
+            title: bookmark.title,
+            url: url,
+            isLoading: true,
+            errorMessage: nil,
+            isSecure: WebKitSecurityPolicy.isSecureURL(url)
+        )
+
+        if let wv = activeWebView {
+            let request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30)
+            wv.load(request)
+        }
+        objectWillChange.send()
     }
 
     public func goBack() {
@@ -119,8 +132,7 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
     }
 
     public func goToHome() {
-        activeWebView?.stopLoading()
-        activeWebView?.load(URLRequest(url: URL(string: "about:blank")!))
+        pauseMedia()
         isHome = true
         urlInputText = ""
         isFullscreenVideo = false
@@ -171,24 +183,13 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
     public func handleDidFinishLoading(for tabId: UUID, title: String?, url: URL?) {
         guard tabId == tabManager.activeTabId else { return }
 
-        // If about:blank finished loading, preserve clean home state
-        if url == nil || url?.absoluteString == "about:blank" {
-            isHome = true
-            tabManager.updateActiveTab(
-                title: "New Tab",
-                url: nil,
-                isLoading: false,
-                estimatedProgress: 0.0,
-                errorMessage: nil,
-                isSecure: true
-            )
-            objectWillChange.send()
-            return
-        }
+        // If currently on Home, do not process background finished loads
+        if isHome { return }
 
-        isHome = false
+        guard let url = url, url.absoluteString != "about:blank" else { return }
+
         let isSecure = WebKitSecurityPolicy.isSecureURL(url)
-        let pageTitle = title ?? url?.host ?? "Web Page"
+        let pageTitle = title ?? url.host ?? "Web Page"
 
         tabManager.updateActiveTab(
             title: pageTitle,
@@ -199,15 +200,16 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
             isSecure: isSecure
         )
 
-        if let urlString = url?.absoluteString, urlString != "about:blank" {
-            urlInputText = urlString
-            historyManager.addEntry(title: pageTitle, urlString: urlString)
-        }
+        urlInputText = url.absoluteString
+        historyManager.addEntry(title: pageTitle, urlString: url.absoluteString)
         objectWillChange.send()
     }
 
     public func handleDidFailLoading(for tabId: UUID, error: Error) {
         guard tabId == tabManager.activeTabId else { return }
+
+        // Don't show error if user is on Home screen
+        if isHome { return }
 
         let userFriendlyMessage: String
         let nsError = error as NSError
@@ -314,9 +316,6 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
         dataStore.removeData(ofTypes: dataTypes, modifiedSince: dateFrom) { [weak self] in
             DispatchQueue.main.async {
                 self?.historyManager.clearAllHistory()
-                for (_, webView) in self?.webViews ?? [:] {
-                    webView.load(URLRequest(url: URL(string: "about:blank")!))
-                }
                 self?.goToHome()
                 completion()
             }

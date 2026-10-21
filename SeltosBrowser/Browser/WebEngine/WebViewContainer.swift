@@ -53,10 +53,11 @@ public struct WebViewContainer: UIViewRepresentable {
         // Register webView with viewModel for the active tab
         viewModel.registerWebView(webView, for: tabId)
 
-        // If target URL is already present, load it immediately upon creation
+        // If target URL is already present and not on Home, load it immediately upon creation
         if let tab = viewModel.tabManager.tabs.first(where: { $0.id == tabId }),
            let targetURL = tab.url,
            targetURL.absoluteString != "about:blank" {
+            context.coordinator.lastLoadedURL = targetURL
             let request = URLRequest(url: targetURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30)
             webView.load(request)
         }
@@ -69,11 +70,12 @@ public struct WebViewContainer: UIViewRepresentable {
         let desktopUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
         uiView.customUserAgent = isDesktop ? desktopUA : nil
 
-        // If tab URL is set and webView hasn't loaded it yet
+        // If tab URL is changed and hasn't been requested yet
         if let tab = viewModel.tabManager.tabs.first(where: { $0.id == tabId }),
            let targetURL = tab.url,
            targetURL.absoluteString != "about:blank" {
-            if uiView.url == nil || uiView.url?.absoluteString == "about:blank" || uiView.url != targetURL {
+            if context.coordinator.lastLoadedURL != targetURL {
+                context.coordinator.lastLoadedURL = targetURL
                 let request = URLRequest(url: targetURL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30)
                 uiView.load(request)
             }
@@ -90,6 +92,7 @@ public struct WebViewContainer: UIViewRepresentable {
     public final class Coordinator: NSObject, WebNavigationObserver, WKScriptMessageHandler {
         let parent: WebViewContainer
         let navigationDelegate: WebNavigationDelegate
+        var lastLoadedURL: URL? = nil
 
         init(_ parent: WebViewContainer) {
             self.parent = parent

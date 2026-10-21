@@ -32,9 +32,11 @@ public final class WebNavigationDelegate: NSObject, WKNavigationDelegate, WKUIDe
             self?.observer?.webViewDidChangeProgress(wv.estimatedProgress)
         }
 
-        // Observe title changes
+        // Observe title changes (only for real web pages)
         titleObservation = webView.observe(\.title, options: [.new]) { [weak self] wv, _ in
-            self?.observer?.webViewDidFinishLoading(wv, title: wv.title, url: wv.url)
+            if let url = wv.url, url.absoluteString != "about:blank" {
+                self?.observer?.webViewDidFinishLoading(wv, title: wv.title, url: url)
+            }
         }
 
         // Observe URL changes
@@ -98,7 +100,9 @@ public final class WebNavigationDelegate: NSObject, WKNavigationDelegate, WKUIDe
     }
 
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        observer?.webViewDidFinishLoading(webView, title: webView.title, url: webView.url)
+        if let url = webView.url, url.absoluteString != "about:blank" {
+            observer?.webViewDidFinishLoading(webView, title: webView.title, url: url)
+        }
         observer?.webViewDidChangeBackForwardState(
             canGoBack: webView.canGoBack,
             canGoForward: webView.canGoForward

@@ -22,7 +22,7 @@ public struct BrowserContainerView: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
 
                 // Navigation Loading Progress Bar
-                if viewModel.activeTab.isLoading {
+                if viewModel.activeTab.isLoading && !viewModel.isHome {
                     ProgressView(value: viewModel.activeTab.estimatedProgress, total: 1.0)
                         .progressViewStyle(LinearProgressViewStyle())
                         .tint(.accentColor)
@@ -34,15 +34,18 @@ public struct BrowserContainerView: View {
 
             // Main View Area: Persistent WebKit + Home Favorites Overlay
             ZStack {
-                // Persistent WKWebView for active tab (keeps WebKit alive in memory)
+                // Persistent WKWebView for active tab (always alive in memory)
                 WebViewContainer(viewModel: viewModel, tabId: viewModel.tabManager.activeTabId)
                     .opacity(viewModel.isHome ? 0 : 1)
                     .allowsHitTesting(!viewModel.isHome)
 
-                if viewModel.isHome {
-                    HomeFavoritesView(viewModel: viewModel)
-                        .transition(.opacity)
-                } else if let error = viewModel.activeTab.errorMessage {
+                // Home Favorites Grid Overlay
+                HomeFavoritesView(viewModel: viewModel)
+                    .opacity(viewModel.isHome ? 1 : 0)
+                    .allowsHitTesting(viewModel.isHome)
+
+                // Error View (only shown when not on Home)
+                if !viewModel.isHome, let error = viewModel.activeTab.errorMessage {
                     WebErrorView(
                         errorMessage: error,
                         onRetry: { viewModel.reload() },
@@ -122,7 +125,7 @@ public struct BrowserContainerView: View {
                 Image(systemName: "chevron.backward")
                     .font(.system(size: 18, weight: .semibold))
             }
-            .disabled(!viewModel.activeTab.canGoBack)
+            .disabled(!viewModel.activeTab.canGoBack || viewModel.isHome)
             .frame(maxWidth: .infinity)
 
             // 2. Forward
@@ -132,7 +135,7 @@ public struct BrowserContainerView: View {
                 Image(systemName: "chevron.forward")
                     .font(.system(size: 18, weight: .semibold))
             }
-            .disabled(!viewModel.activeTab.canGoForward)
+            .disabled(!viewModel.activeTab.canGoForward || viewModel.isHome)
             .frame(maxWidth: .infinity)
 
             // 3. Home Button (Direct instant return to Favorites Grid)
