@@ -29,9 +29,25 @@ targets:
         CFBundleDisplayName: "Kia Browser"
         CFBundleName: "Kia Browser"
         UILaunchStoryboardName: "LaunchScreen"
+        NSLocationWhenInUseUsageDescription: "Kia Browser uses your motion state to detect vehicle movement."
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
           NSAllowsArbitraryLoadsInWebContent: true
+        UIBackgroundModes:
+          - audio
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+          UISceneConfigurations:
+            CPTemplateApplicationSceneSessionRoleApplication:
+              - UISceneClassName: "CPTemplateApplicationScene"
+                UISceneConfigurationName: "CarPlay"
+                UISceneDelegateClassName: "$(PRODUCT_MODULE_NAME).CarPlaySceneDelegate"
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: "Default Configuration"
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
     frameworks:
       - framework: WebKit.framework
       - framework: CarPlay.framework
