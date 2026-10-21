@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- 1. Full Screen Car Display WebView -->
+    <WebView
+        android:id="@+id/carWebView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- 2. Top Minimal Car Bar (Auto-hiding / Sleek) -->
+    <LinearLayout
+        android:id="@+id/carTopBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="#CC0F172A"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/app_logo" />
+
+        <TextView
+            android:id="@+id/carTitleText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Kia Browser"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnCarHome"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Home"
+            android:src="@drawable/ic_home"
+            app:tint="#FFFFFF" />
+
+        <ImageButton
+            android:id="@+id/btnCarBack"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="#FFFFFF" />
+
+        <ImageButton
+            android:id="@+id/btnCarRefresh"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Refresh"
+            android:src="@drawable/ic_refresh"
+            app:tint="#FFFFFF" />
+    </LinearLayout>
+
+    <!-- 3. Bottom Floating Touch Media HUD (5s Seek, Play/Pause, Fullscreen) -->
+    <LinearLayout
+        android:id="@+id/carMediaHud"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_car_hud"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp">
+
+        <!-- 5s Rewind -->
+        <ImageButton
+            android:id="@+id/btnCarRewind5"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Rewind 5s"
+            android:src="@drawable/ic_replay_5"
+            app:tint="#00E5FF" />
+
+        <TextView
+            android:id="@+id/tvCarRewindLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:text="5s"
+            android:textColor="#00E5FF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <!-- Play / Pause -->
+        <ImageButton
+            android:id="@+id/btnCarPlayPause"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_circle_accent"
+            android:contentDescription="Play Pause"
+            android:src="@drawable/ic_play"
+            app:tint="#0F172A" />
+
+        <!-- 5s Forward -->
+        <TextView
+            android:id="@+id/tvCarForwardLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="5s"
+            android:textColor="#00E5FF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnCarForward5"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Forward 5s"
+            android:src="@drawable/ic_forward_5"
+            app:tint="#00E5FF" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="24dp"
+            android:layout_marginHorizontal="12dp"
+            android:background="#475569" />
+
+        <!-- Fullscreen -->
+        <ImageButton
+            android:id="@+id/btnCarFullscreen"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Fullscreen"
+            android:src="@drawable/ic_fullscreen"
+            app:tint="#FFFFFF" />
+    </LinearLayout>
+
+</FrameLayout>

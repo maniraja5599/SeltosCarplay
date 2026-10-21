@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kia Browser</string>
+    <string name="search_hint">Search Google or type URL…</string>
+    <string name="seek_5s">5s</string>
+    <string name="seek_10s">10s</string>
+    <string name="seek_15s">15s</string>
+    <string name="seek_60s">1m</string>
+    <string name="rewind_5s">-5s</string>
+    <string name="forward_5s">+5s</string>
+    <string name="carplay_active">Kia Seltos Screen Active</string>
+</resources>
