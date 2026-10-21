@@ -7,15 +7,23 @@ import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.os.IBinder
 import android.os.PowerManager
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
+import androidx.media.MediaBrowserServiceCompat
 
-class KiaPlaybackService : Service() {
+class KiaPlaybackService : MediaBrowserServiceCompat() {
 
     private var wakeLock: PowerManager.WakeLock? = null
-    private var isPlaying = true
+    private var isPlaying = false
     private var currentTitle = "Kia Browser"
     private var audioManager: AudioManager? = null
     private var audioFocusRequest: AudioFocusRequest? = null
@@ -23,6 +31,11 @@ class KiaPlaybackService : Service() {
     companion object {
         const val CHANNEL_ID = "kia_browser_playback_channel"
         const val NOTIFICATION_ID = 1001
+
+        const val MEDIA_ROOT_ID = "kia_browser_root"
+        const val MEDIA_ID_YOUTUBE = "media_youtube"
+        const val MEDIA_ID_CRICKET = "media_cricket"
+        const val MEDIA_ID_HOTSTAR = "media_hotstar"
 
         const val ACTION_START_PLAYBACK = "com.seltos.kiabrowser.START_PLAYBACK"
         const val ACTION_STOP_PLAYBACK = "com.seltos.kiabrowser.STOP_PLAYBACK"
@@ -35,6 +48,8 @@ class KiaPlaybackService : Service() {
         const val EXTRA_IS_PLAYING = "extra_is_playing"
 
         var activeCallback: PlaybackCallback? = null
+        var instance: KiaPlaybackService? = null
+        var mediaSessionInstance: MediaSessionCompat? = null
 
         fun startService(context: Context, title: String, isPlaying: Boolean) {
             val intent = Intent(context, KiaPlaybackService::class.java).apply {
@@ -42,10 +57,14 @@ class KiaPlaybackService : Service() {
                 putExtra(EXTRA_TITLE, title)
                 putExtra(EXTRA_IS_PLAYING, isPlaying)
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
+                }
+            } catch (e: Exception) {
+                // Ignore background start exceptions
             }
         }
 
@@ -67,9 +86,141 @@ class KiaPlaybackService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        instance = this
         createNotificationChannel()
         acquireWakeLock()
         requestAudioFocus()
+        setupMediaSession()
+    }
+
+    private fun setupMediaSession() {
+        if (mediaSessionInstance == null) {
+            mediaSessionInstance = MediaSessionCompat(this, "KiaBrowserMediaSession").apply {
+                setFlags(
+                    MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                    MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+                )
+
+                setCallback(object : MediaSessionCompat.Callback() {
+                    override fun onPlay() {
+                        isPlaying = true
+                        activeCallback?.onServicePlayPause()
+                        updatePlaybackState(true, 0)
+                        startForegroundWithNotification()
+                    }
+
+                    override fun onPause() {
+                        isPlaying = false
+                        activeCallback?.onServicePlayPause()
+                        updatePlaybackState(false, 0)
+                        startForegroundWithNotification()
+                    }
+
+                    override fun onSkipToNext() {
+                        activeCallback?.onServiceNext()
+                    }
+
+                    override fun onSkipToPrevious() {
+                        activeCallback?.onServicePrevious()
+                    }
+
+                    override fun onFastForward() {
+                        val step = SettingsManager.getInstance(this@KiaPlaybackService).seekInterval
+                        activeCallback?.onServiceForward(step)
+                    }
+
+                    override fun onRewind() {
+                        val step = SettingsManager.getInstance(this@KiaPlaybackService).seekInterval
+                        activeCallback?.onServiceRewind(step)
+                    }
+
+                    override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+                        when (mediaId) {
+                            MEDIA_ID_CRICKET -> {
+                                val intent = Intent(this@KiaPlaybackService, MainActivity::class.java).apply {
+                                    data = Uri.parse("file:///android_asset/cricket_hub.html?match=0")
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                }
+                                startActivity(intent)
+                            }
+                            else -> {
+                                val intent = Intent(this@KiaPlaybackService, MainActivity::class.java).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                }
+                                startActivity(intent)
+                            }
+                        }
+                        onPlay()
+                    }
+                })
+
+                isActive = true
+            }
+        }
+
+        sessionToken = mediaSessionInstance?.sessionToken
+    }
+
+    override fun onGetRoot(
+        clientPackageName: String,
+        clientUid: Int,
+        rootHints: Bundle?
+    ): BrowserRoot {
+        return BrowserRoot(MEDIA_ROOT_ID, null)
+    }
+
+    override fun onLoadChildren(
+        parentId: String,
+        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
+    ) {
+        val items = mutableListOf<MediaBrowserCompat.MediaItem>()
+        if (parentId == MEDIA_ROOT_ID) {
+            items.add(buildMediaItem(MEDIA_ID_YOUTUBE, "YouTube & Media", "Resume active browser playback"))
+            items.add(buildMediaItem(MEDIA_ID_CRICKET, "Live Cricket Score", "Live match commentary & scores"))
+            items.add(buildMediaItem(MEDIA_ID_HOTSTAR, "Hotstar & Apps", "Stream web video"))
+        }
+        result.sendResult(items)
+    }
+
+    private fun buildMediaItem(id: String, title: String, subtitle: String): MediaBrowserCompat.MediaItem {
+        val desc = MediaDescriptionCompat.Builder()
+            .setMediaId(id)
+            .setTitle(title)
+            .setSubtitle(subtitle)
+            .build()
+        return MediaBrowserCompat.MediaItem(desc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE)
+    }
+
+    fun updatePlaybackState(playing: Boolean, positionMs: Long = 0) {
+        isPlaying = playing
+        val state = if (playing) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
+        val actions = PlaybackStateCompat.ACTION_PLAY or
+                PlaybackStateCompat.ACTION_PAUSE or
+                PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                PlaybackStateCompat.ACTION_FAST_FORWARD or
+                PlaybackStateCompat.ACTION_REWIND or
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
+                PlaybackStateCompat.ACTION_SEEK_TO
+
+        val playbackState = PlaybackStateCompat.Builder()
+            .setActions(actions)
+            .setState(state, positionMs, 1.0f)
+            .build()
+
+        mediaSessionInstance?.setPlaybackState(playbackState)
+    }
+
+    fun updateMetadata(title: String, artist: String = "Kia Browser", durationMs: Long = 0) {
+        currentTitle = title
+        val metadata = MediaMetadataCompat.Builder()
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
+            .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durationMs)
+            .build()
+
+        mediaSessionInstance?.setMetadata(metadata)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -79,11 +230,14 @@ class KiaPlaybackService : Service() {
             ACTION_START_PLAYBACK -> {
                 currentTitle = intent.getStringExtra(EXTRA_TITLE) ?: "Kia Browser"
                 isPlaying = intent.getBooleanExtra(EXTRA_IS_PLAYING, true)
+                updatePlaybackState(isPlaying, 0)
+                updateMetadata(currentTitle)
                 startForegroundWithNotification()
             }
             ACTION_PLAY_PAUSE -> {
                 isPlaying = !isPlaying
                 activeCallback?.onServicePlayPause()
+                updatePlaybackState(isPlaying, 0)
                 startForegroundWithNotification()
             }
             ACTION_REWIND -> {
@@ -132,7 +286,6 @@ class KiaPlaybackService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Actions: Rewind, Play/Pause, Forward
         val rewindIntent = PendingIntent.getService(
             this,
             1,
@@ -255,9 +408,15 @@ class KiaPlaybackService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        instance = null
         releaseWakeLock()
         abandonAudioFocus()
     }
 
-    override fun onBind(intent: Intent?): IBinder? = null
+    override fun onBind(intent: Intent?): IBinder? {
+        if (SERVICE_INTERFACE == intent?.action) {
+            return super.onBind(intent)
+        }
+        return super.onBind(intent)
+    }
 }

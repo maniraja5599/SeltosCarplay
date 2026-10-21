@@ -26,48 +26,53 @@ class KiaMediaSessionManager(
     }
 
     private fun setupMediaSession() {
-        mediaSession = MediaSessionCompat(context, "KiaBrowserMediaSession").apply {
-            setFlags(
-                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
-                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-            )
-
-            setCallback(object : MediaSessionCompat.Callback() {
-                override fun onPlay() {
-                    listener.onMediaPlay()
-                    updatePlaybackState(true, 0)
-                }
-
-                override fun onPause() {
-                    listener.onMediaPause()
-                    updatePlaybackState(false, 0)
-                }
-
-                override fun onSkipToNext() {
-                    listener.onMediaNext()
-                }
-
-                override fun onSkipToPrevious() {
-                    listener.onMediaPrevious()
-                }
-
-                override fun onFastForward() {
-                    val step = SettingsManager.getInstance(context).seekInterval
-                    listener.onMediaSeekForward(step)
-                }
-
-                override fun onRewind() {
-                    val step = SettingsManager.getInstance(context).seekInterval
-                    listener.onMediaSeekBackward(step)
-                }
-
-                override fun onSeekTo(pos: Long) {
-                    listener.onMediaSeekTo(pos)
-                }
-            })
-
-            isActive = true
+        val existing = KiaPlaybackService.mediaSessionInstance
+        if (existing != null) {
+            mediaSession = existing
+        } else {
+            mediaSession = MediaSessionCompat(context, "KiaBrowserMediaSession").apply {
+                setFlags(
+                    MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                    MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+                )
+                isActive = true
+            }
+            KiaPlaybackService.mediaSessionInstance = mediaSession
         }
+
+        mediaSession?.setCallback(object : MediaSessionCompat.Callback() {
+            override fun onPlay() {
+                listener.onMediaPlay()
+                updatePlaybackState(true, 0)
+            }
+
+            override fun onPause() {
+                listener.onMediaPause()
+                updatePlaybackState(false, 0)
+            }
+
+            override fun onSkipToNext() {
+                listener.onMediaNext()
+            }
+
+            override fun onSkipToPrevious() {
+                listener.onMediaPrevious()
+            }
+
+            override fun onFastForward() {
+                val step = SettingsManager.getInstance(context).seekInterval
+                listener.onMediaSeekForward(step)
+            }
+
+            override fun onRewind() {
+                val step = SettingsManager.getInstance(context).seekInterval
+                listener.onMediaSeekBackward(step)
+            }
+
+            override fun onSeekTo(pos: Long) {
+                listener.onMediaSeekTo(pos)
+            }
+        })
     }
 
     fun updatePlaybackState(isPlaying: Boolean, positionMs: Long) {
@@ -100,8 +105,11 @@ class KiaMediaSessionManager(
     }
 
     fun release() {
-        mediaSession?.isActive = false
-        mediaSession?.release()
+        if (KiaPlaybackService.instance == null) {
+            mediaSession?.isActive = false
+            mediaSession?.release()
+            KiaPlaybackService.mediaSessionInstance = null
+        }
         mediaSession = null
     }
 }
