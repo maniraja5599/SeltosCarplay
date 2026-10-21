@@ -12,6 +12,7 @@ settings:
     IPHONEOS_DEPLOYMENT_TARGET: "16.0"
     CODE_SIGN_STYLE: Automatic
     ENABLE_BITCODE: NO
+    ENABLE_TESTABILITY: YES
 
 targets:
   SeltosBrowser:
@@ -46,3 +47,22 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.seltos.browser.tests
+
+schemes:
+  SeltosBrowser:
+    build:
+      targets:
+        SeltosBrowser: all
+        SeltosBrowserTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - SeltosBrowserTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
