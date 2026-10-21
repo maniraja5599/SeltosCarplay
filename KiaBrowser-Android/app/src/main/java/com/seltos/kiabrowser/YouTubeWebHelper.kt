@@ -17,14 +17,10 @@ object YouTubeWebHelper {
         return lower.contains("googleads.g.doubleclick.net") ||
                 lower.contains("pubads.g.doubleclick.net") ||
                 lower.contains("pagead2.googlesyndication.com") ||
-                lower.contains("youtube.com/pagead/") ||
-                lower.contains("youtube.com/api/stats/ads") ||
-                lower.contains("youtube.com/api/stats/atr") ||
-                lower.contains("youtube.com/ptracking") ||
-                lower.contains("youtube.com/get_midroll_info") ||
                 lower.contains("static.doubleclick.net") ||
                 lower.contains("adservice.google.") ||
-                lower.contains("googlesyndication.com")
+                lower.contains("googlesyndication.com") ||
+                lower.contains("doubleclick.net")
     }
 
     /**
@@ -55,15 +51,99 @@ object YouTubeWebHelper {
     """
 
     /**
-     * 100% Ad Blocker & Instant Ad Auto-Skipper:
-     * 1. Injects aggressive CSS to hide banners, overlays, promos, and sponsored slots.
-     * 2. Auto-clicks skip buttons within milliseconds.
-     * 3. If an unskippable video ad appears, mutes it, jumps to duration, and triggers skipAd.
+     * 100% Comprehensive YouTube & Web Ad Blocker:
+     * 1. Intercepts ytInitialPlayerResponse & /youtubei/v1/player API responses to strip all adPlacements,
+     *    giving a clean YouTube Premium experience where ads are never even scheduled.
+     * 2. High-frequency DOM Ad Skipper & Fast-Forwarder on timeupdate and 50ms interval.
+     * 3. Aggressive CSS suppression of all banner, overlay, and promoted ad components.
      */
     const val AD_AND_PROMO_SUPPRESSION_SCRIPT = """
         (function() {
             try {
-                // 1. Inject aggressive CSS
+                // Helper to remove all ad data structures from YouTube player JSON responses
+                function sanitizePlayerJson(data) {
+                    if (!data || typeof data !== 'object') return data;
+                    try {
+                        if (data.adPlacements) delete data.adPlacements;
+                        if (data.playerAds) delete data.playerAds;
+                        if (data.adSlots) delete data.adSlots;
+                        if (data.adBreakHeartbeatParams) delete data.adBreakHeartbeatParams;
+                        if (data.playbackTracking) {
+                            delete data.playbackTracking.videostatsPlaybackUrl;
+                            delete data.playbackTracking.videostatsDelayplayUrl;
+                            delete data.playbackTracking.videostatsWatchtimeUrl;
+                            delete data.playbackTracking.qoeUrl;
+                            delete data.playbackTracking.atrUrl;
+                        }
+                    } catch(e) {}
+                    return data;
+                }
+
+                // 1. Intercept initial player response before YouTube player boots
+                if (window.ytInitialPlayerResponse) {
+                    sanitizePlayerJson(window.ytInitialPlayerResponse);
+                }
+                let _storedPlayerResponse = window.ytInitialPlayerResponse;
+                try {
+                    Object.defineProperty(window, 'ytInitialPlayerResponse', {
+                        get: () => _storedPlayerResponse,
+                        set: (val) => { _storedPlayerResponse = sanitizePlayerJson(val); },
+                        configurable: true
+                    });
+                } catch(e) {}
+
+                // 2. Intercept window.fetch for /youtubei/v1/player requests
+                if (!window.__kiaFetchPatched) {
+                    window.__kiaFetchPatched = true;
+                    const origFetch = window.fetch;
+                    window.fetch = async function(...args) {
+                        const response = await origFetch.apply(this, args);
+                        try {
+                            const url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url ? args[0].url : '');
+                            if (url && (url.includes('/youtubei/v1/player') || url.includes('/youtubei/v1/next'))) {
+                                const clone = response.clone();
+                                const json = await clone.json();
+                                if (json) {
+                                    sanitizePlayerJson(json);
+                                    return new Response(JSON.stringify(json), {
+                                        status: response.status,
+                                        statusText: response.statusText,
+                                        headers: response.headers
+                                    });
+                                }
+                            }
+                        } catch(e) {}
+                        return response;
+                    };
+                }
+
+                // 3. Intercept XMLHttpRequest for /youtubei/v1/player requests
+                if (!window.__kiaXhrPatched) {
+                    window.__kiaXhrPatched = true;
+                    const origXhrOpen = XMLHttpRequest.prototype.open;
+                    const origXhrSend = XMLHttpRequest.prototype.send;
+                    XMLHttpRequest.prototype.open = function(method, url) {
+                        this._kiaRequestUrl = url;
+                        return origXhrOpen.apply(this, arguments);
+                    };
+                    XMLHttpRequest.prototype.send = function() {
+                        if (this._kiaRequestUrl && (this._kiaRequestUrl.includes('/youtubei/v1/player') || this._kiaRequestUrl.includes('/youtubei/v1/next'))) {
+                            this.addEventListener('readystatechange', function() {
+                                if (this.readyState === 4 && this.status === 200) {
+                                    try {
+                                        const json = JSON.parse(this.responseText);
+                                        sanitizePlayerJson(json);
+                                        Object.defineProperty(this, 'responseText', { value: JSON.stringify(json), writable: true });
+                                        Object.defineProperty(this, 'response', { value: JSON.stringify(json), writable: true });
+                                    } catch(e) {}
+                                }
+                            });
+                        }
+                        return origXhrSend.apply(this, arguments);
+                    };
+                }
+
+                // 4. Inject Aggressive CSS to hide all ad elements
                 if (!document.getElementById('kia-adblock-style')) {
                     const style = document.createElement('style');
                     style.id = 'kia-adblock-style';
@@ -76,41 +156,42 @@ object YouTubeWebHelper {
                         ytm-pivot-bar-renderer, .upsell-dialog, .mobile-topbar-header-upsell, ytm-app-banner,
                         .open-in-app, .standalone-collection-badge-renderer, #masthead-ad,
                         ytd-rich-item-renderer:has(.ytd-ad-slot-renderer),
-                        ytd-ad-slot-renderer, ytd-in-feed-ad-layout-renderer, .ytd-player-legacy-desktop-watch-ads-renderer {
+                        ytd-ad-slot-renderer, ytd-in-feed-ad-layout-renderer, .ytd-player-legacy-desktop-watch-ads-renderer,
+                        ytm-companion-ad-renderer, ytm-promoted-item-renderer, ytm-ad-slot-renderer,
+                        .ytp-ad-player-overlay, .ytp-ad-text {
                             display: none !important;
                         }
                     `;
                     (document.head || document.documentElement).appendChild(style);
                 }
 
-                // 2. High-speed Ad Skipper
-                function skipAllAds() {
+                // 5. Ultra-Fast Ad Auto-Skipper & Fast-Forwarder
+                function eliminateActiveAds() {
                     try {
-                        // Click skip buttons
-                        const skipSelectors = [
-                            '.ytp-ad-skip-button',
-                            '.ytp-ad-skip-button-modern',
-                            '.ytp-skip-ad-button',
-                            '.ytp-ad-skip-button-slot button',
-                            '.videoAdUiSkipButton',
-                            'button.ytp-ad-overlay-close-button',
-                            'button[aria-label="Skip ad"]',
-                            '.ytp-ad-skip-button-container button'
-                        ];
-                        for (let i = 0; i < skipSelectors.length; i++) {
-                            const btn = document.querySelector(skipSelectors[i]);
-                            if (btn) {
+                        // A. Click all skip buttons
+                        const skipButtons = document.querySelectorAll(
+                            '.ytp-ad-skip-button, .ytp-ad-skip-button-modern, .ytp-skip-ad-button, ' +
+                            '.ytp-ad-skip-button-slot button, .videoAdUiSkipButton, ' +
+                            'button.ytp-ad-overlay-close-button, button[aria-label*="Skip"], ' +
+                            '.ytm-skip-ad-button, .ytp-ad-preview-container, .ytp-ad-skip-button-container button, ' +
+                            'button[class*="skip"], div[class*="skip-button"]'
+                        );
+                        for (let i = 0; i < skipButtons.length; i++) {
+                            const btn = skipButtons[i];
+                            if (btn && typeof btn.click === 'function') {
                                 btn.click();
                             }
                         }
 
-                        // Check if ad is interrupting / showing
+                        // B. Check if ad is active
                         const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
-                        const isAdPlaying = (player && (player.classList.contains('ad-showing') || player.classList.contains('ad-interrupting'))) ||
-                                            document.querySelector('.ad-showing') !== null ||
-                                            document.querySelector('.ytp-ad-player-overlay') !== null;
+                        const adShowing = document.querySelector('.ad-showing') !== null ||
+                                          document.querySelector('.ad-interrupting') !== null ||
+                                          document.querySelector('.ytp-ad-player-overlay') !== null ||
+                                          document.querySelector('.ytp-ad-text') !== null ||
+                                          (player && (player.classList.contains('ad-showing') || player.classList.contains('ad-interrupting')));
 
-                        if (isAdPlaying) {
+                        if (adShowing) {
                             const videos = document.querySelectorAll('video');
                             for (let i = 0; i < videos.length; i++) {
                                 const v = videos[i];
@@ -119,8 +200,6 @@ object YouTubeWebHelper {
                                     v.playbackRate = 16.0;
                                     if (isFinite(v.duration) && v.duration > 0) {
                                         v.currentTime = v.duration;
-                                    } else {
-                                        v.currentTime = 99999;
                                     }
                                 }
                             }
@@ -131,12 +210,16 @@ object YouTubeWebHelper {
                     } catch(e) {}
                 }
 
-                skipAllAds();
-                if (!window.__kiaAdBlockerRunning) {
-                    window.__kiaAdBlockerRunning = true;
-                    setInterval(skipAllAds, 200);
+                // Trigger on timeupdate & high-speed interval
+                eliminateActiveAds();
+                document.addEventListener('timeupdate', eliminateActiveAds, true);
+                document.addEventListener('playing', eliminateActiveAds, true);
 
-                    const observer = new MutationObserver(skipAllAds);
+                if (!window.__kiaAdBlockerLoop) {
+                    window.__kiaAdBlockerLoop = true;
+                    setInterval(eliminateActiveAds, 50);
+
+                    const observer = new MutationObserver(eliminateActiveAds);
                     observer.observe(document.documentElement || document.body, {
                         childList: true,
                         subtree: true

@@ -187,6 +187,13 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
                 }
             }
 
+            override fun onLoadResource(view: WebView?, url: String?) {
+                super.onLoadResource(view, url)
+                if (settingsManager.isAdBlockEnabled && YouTubeWebHelper.isYouTubeUrl(view?.url)) {
+                    view?.evaluateJavascript(YouTubeWebHelper.AD_AND_PROMO_SUPPRESSION_SCRIPT, null)
+                }
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 binding.loadingProgress.visibility = View.GONE
@@ -219,6 +226,13 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
                 if (newProgress >= 100) {
                     binding.loadingProgress.visibility = View.GONE
                 }
+            }
+
+            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+                consoleMessage?.message()?.let { msg ->
+                    android.util.Log.d("KiaWebConsole", msg)
+                }
+                return true
             }
         }
     }

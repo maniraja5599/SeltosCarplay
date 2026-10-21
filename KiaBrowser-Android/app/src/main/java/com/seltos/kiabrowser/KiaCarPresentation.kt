@@ -120,6 +120,13 @@ class KiaCarPresentation(
                 carWebView.evaluateJavascript(YouTubeWebHelper.AD_AND_PROMO_SUPPRESSION_SCRIPT, null)
             }
 
+            override fun onLoadResource(view: WebView?, url: String?) {
+                super.onLoadResource(view, url)
+                if (YouTubeWebHelper.isYouTubeUrl(view?.url)) {
+                    carWebView.evaluateJavascript(YouTubeWebHelper.AD_AND_PROMO_SUPPRESSION_SCRIPT, null)
+                }
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 carTitleText.text = view?.title ?: "Kia Browser"
