@@ -96,8 +96,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/loadingProgress">
 
-        <!-- Active Phone WebKit -->
-        <WebView
+        <!-- Active Phone WebKit (Background-Safe) -->
+        <com.seltos.kiabrowser.BackgroundWebView
             android:id="@+id/mainWebView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

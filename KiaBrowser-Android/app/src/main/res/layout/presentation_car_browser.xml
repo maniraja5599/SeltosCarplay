@@ -5,8 +5,8 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- 1. Full Screen Car Display WebView -->
-    <WebView
+    <!-- 1. Full Screen Car Display WebView (Background-Safe) -->
+    <com.seltos.kiabrowser.BackgroundWebView
         android:id="@+id/carWebView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

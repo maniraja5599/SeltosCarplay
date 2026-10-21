@@ -16,6 +16,8 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import com.seltos.kiabrowser.databinding.ActivityMainBinding
 import java.util.Locale
 
@@ -75,9 +77,23 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         setupListeners()
         setupShortcuts()
         updateSeekButtonLabels()
-        showHome()
+
+        val initialUrl = intent?.dataString
+        if (!initialUrl.isNullOrBlank()) {
+            loadUrl(initialUrl)
+        } else {
+            showHome()
+        }
 
         carDisplayManager.startListening()
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        intent?.dataString?.let { url ->
+            loadUrl(url)
+        }
     }
 
     private fun checkNotificationPermission() {
@@ -128,6 +144,15 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         webSettings.databaseEnabled = true
 
         applyDesktopMode(settingsManager.isDesktopMode)
+
+        // Inject anti-pause at document start before YouTube page scripts execute
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            WebViewCompat.addDocumentStartJavaScript(
+                binding.mainWebView,
+                YouTubeWebHelper.ANTI_BACKGROUND_PAUSE_SCRIPT,
+                setOf("*")
+            )
+        }
 
         binding.mainWebView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {

@@ -9,6 +9,8 @@ import android.view.View
 import android.webkit.*
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 
 class KiaCarPresentation(
     outerContext: Context,
@@ -74,6 +76,15 @@ class KiaCarPresentation(
         val isDesktop = SettingsManager.getInstance(context).isDesktopMode
         if (isDesktop) {
             settings.userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+
+        // Inject anti-pause at document start before YouTube page scripts execute
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            WebViewCompat.addDocumentStartJavaScript(
+                carWebView,
+                YouTubeWebHelper.ANTI_BACKGROUND_PAUSE_SCRIPT,
+                setOf("*")
+            )
         }
 
         carWebView.addJavascriptInterface(CarMediaBridge(), "CarMediaBridge")

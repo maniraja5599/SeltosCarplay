@@ -14,14 +14,47 @@ object YouTubeWebHelper {
     const val ANTI_BACKGROUND_PAUSE_SCRIPT = """
         (function() {
             try {
+                // 1. Spoof Page Visibility API
                 Object.defineProperty(document, 'hidden', { get: () => false, configurable: true });
                 Object.defineProperty(document, 'visibilityState', { get: () => 'visible', configurable: true });
                 Object.defineProperty(document, 'webkitVisibilityState', { get: () => 'visible', configurable: true });
                 Object.defineProperty(document, 'webkitHidden', { get: () => false, configurable: true });
 
-                document.addEventListener('visibilitychange', function(e) {
-                    e.stopImmediatePropagation();
-                }, true);
+                // 2. Suppress visibilitychange, blur and pagehide events
+                const suppress = e => {
+                    if (!window.__intentionalUserAction) {
+                        e.stopImmediatePropagation();
+                    }
+                };
+                window.addEventListener('visibilitychange', suppress, true);
+                document.addEventListener('visibilitychange', suppress, true);
+                window.addEventListener('webkitvisibilitychange', suppress, true);
+                document.addEventListener('webkitvisibilitychange', suppress, true);
+                window.addEventListener('blur', suppress, true);
+                window.addEventListener('pagehide', suppress, true);
+
+                // 3. Mark touch/clicks as intentional user actions for 500ms
+                const markUserAction = () => {
+                    window.__intentionalUserAction = true;
+                    clearTimeout(window.__userActionTimer);
+                    window.__userActionTimer = setTimeout(() => {
+                        window.__intentionalUserAction = false;
+                    }, 600);
+                };
+                document.addEventListener('touchstart', markUserAction, { capture: true, passive: true });
+                document.addEventListener('click', markUserAction, { capture: true, passive: true });
+                document.addEventListener('keydown', markUserAction, { capture: true, passive: true });
+
+                // 4. Monkey-patch HTMLMediaElement.prototype.pause
+                if (!HTMLMediaElement.prototype.__originalPause) {
+                    HTMLMediaElement.prototype.__originalPause = HTMLMediaElement.prototype.pause;
+                    HTMLMediaElement.prototype.pause = function() {
+                        if (window.__intentionalUserAction) {
+                            return this.__originalPause();
+                        }
+                        // Suppress background pause!
+                    };
+                }
             } catch(e) {}
         })();
     """
@@ -50,15 +83,18 @@ object YouTubeWebHelper {
     fun seekScript(deltaSeconds: Int): String {
         return """
             (function() {
+                window.__intentionalUserAction = true;
                 const delta = $deltaSeconds;
                 const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
                 if (player && typeof player.seekBy === 'function') {
                     player.seekBy(delta);
+                    setTimeout(() => { window.__intentionalUserAction = false; }, 300);
                     return;
                 }
                 if (player && typeof player.getCurrentTime === 'function' && typeof player.seekTo === 'function') {
                     const current = player.getCurrentTime() || 0;
                     player.seekTo(Math.max(0, current + delta), true);
+                    setTimeout(() => { window.__intentionalUserAction = false; }, 300);
                     return;
                 }
 
@@ -66,6 +102,7 @@ object YouTubeWebHelper {
                 if (video) {
                     video.currentTime = Math.max(0, Math.min(video.duration || 0, video.currentTime + delta));
                 }
+                setTimeout(() => { window.__intentionalUserAction = false; }, 300);
             })();
         """.trimIndent()
     }
@@ -76,16 +113,19 @@ object YouTubeWebHelper {
     fun seekToScript(positionSeconds: Double): String {
         return """
             (function() {
+                window.__intentionalUserAction = true;
                 const pos = $positionSeconds;
                 const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
                 if (player && typeof player.seekTo === 'function') {
                     player.seekTo(pos, true);
+                    setTimeout(() => { window.__intentionalUserAction = false; }, 300);
                     return;
                 }
                 const video = document.querySelector('video');
                 if (video) {
                     video.currentTime = Math.max(0, Math.min(video.duration || 0, pos));
                 }
+                setTimeout(() => { window.__intentionalUserAction = false; }, 300);
             })();
         """.trimIndent()
     }
@@ -95,6 +135,7 @@ object YouTubeWebHelper {
      */
     const val TOGGLE_PLAY_PAUSE_SCRIPT = """
         (function() {
+            window.__intentionalUserAction = true;
             const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
             if (player && typeof player.getPlayerState === 'function') {
                 const state = player.getPlayerState();
@@ -103,6 +144,7 @@ object YouTubeWebHelper {
                 } else {
                     player.playVideo();
                 }
+                setTimeout(() => { window.__intentionalUserAction = false; }, 300);
                 return;
             }
 
@@ -111,9 +153,14 @@ object YouTubeWebHelper {
                 if (video.paused) {
                     video.play();
                 } else {
-                    video.pause();
+                    if (video.__originalPause) {
+                        video.__originalPause();
+                    } else {
+                        video.pause();
+                    }
                 }
             }
+            setTimeout(() => { window.__intentionalUserAction = false; }, 300);
         })();
     """
 }
