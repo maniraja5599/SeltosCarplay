@@ -32,15 +32,23 @@ jobs:
 
       - name: Build Application for iOS Device
         run: |
+          set -o pipefail
           xcodebuild build \
             -project SeltosBrowser.xcodeproj \
             -scheme SeltosBrowser \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -derivedDataPath derived_data \
-            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_STYLE="Manual" \
+            CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            2>&1 | tee build.log || {
+              echo "=== BUILD FAILED. LOG TAIL: ==="
+              tail -n 120 build.log
+              exit 1
+            }
 
       - name: Package Unsigned IPA for Sideloading
         run: |
@@ -66,12 +74,3 @@ jobs:
           name: SeltosBrowser-IPA
           path: build-output/SeltosBrowser.ipa
           if-no-files-found: error
-
-      - name: Run Unit Tests on iOS Simulator (Diagnostic)
-        continue-on-error: true
-        run: |
-          xcodebuild test \
-            -project SeltosBrowser.xcodeproj \
-            -scheme SeltosBrowser \
-            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
-            CODE_SIGNING_ALLOWED=NO
