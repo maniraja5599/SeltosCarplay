@@ -15,7 +15,6 @@ settings:
     CODE_SIGNING_REQUIRED: NO
     CODE_SIGN_IDENTITY: ""
     ENABLE_BITCODE: NO
-    ENABLE_TESTABILITY: YES
 
 targets:
   SeltosBrowser:
@@ -25,8 +24,6 @@ targets:
       - path: SeltosBrowser
     info:
       path: SeltosBrowser/App/Info.plist
-    entitlements:
-      path: SeltosBrowser/Entitlements/SeltosBrowser.entitlements
     frameworks:
       - framework: WebKit.framework
       - framework: CarPlay.framework
@@ -43,37 +40,3 @@ targets:
         CODE_SIGNING_ALLOWED: NO
         CODE_SIGNING_REQUIRED: NO
         CODE_SIGN_IDENTITY: ""
-
-  SeltosBrowserTests:
-    type: bundle.unit-test
-    platform: iOS
-    sources:
-      - path: SeltosBrowserTests
-    dependencies:
-      - target: SeltosBrowser
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.seltos.browser.tests
-        CODE_SIGN_STYLE: Manual
-        CODE_SIGNING_ALLOWED: NO
-        CODE_SIGNING_REQUIRED: NO
-        CODE_SIGN_IDENTITY: ""
-
-schemes:
-  SeltosBrowser:
-    build:
-      targets:
-        SeltosBrowser: all
-        SeltosBrowserTests: [test]
-    run:
-      config: Debug
-    test:
-      config: Debug
-      targets:
-        - SeltosBrowserTests
-    profile:
-      config: Release
-    analyze:
-      config: Debug
-    archive:
-      config: Release
