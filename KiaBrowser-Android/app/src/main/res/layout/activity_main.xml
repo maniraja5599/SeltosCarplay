@@ -441,18 +441,78 @@
 
                 </GridLayout>
 
-                <!-- Settings & Configuration Section Header -->
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Dedicated Settings & Developer Info Overlay Screen -->
+        <ScrollView
+            android:id="@+id/settingsView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/background_dark"
+            android:fillViewport="true"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="90dp">
+
+                <!-- Settings Top Header with Back Navigation -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingBottom="12dp">
+
+                    <ImageButton
+                        android:id="@+id/btnSettingsBack"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Back"
+                        android:src="@drawable/ic_arrow_back"
+                        app:tint="@color/text_primary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Settings &amp; Info"
+                            android:textColor="@color/text_primary"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kia Seltos Infotainment Edition"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- CARD 1: DEVELOPER PROFILE CARD -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="28dp"
-                    android:layout_marginBottom="12dp"
-                    android:text="SETTINGS &amp; VEHICLE CONFIG"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="DEVELOPER PROFILE"
+                    android:textColor="@color/accent"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
-                <!-- Settings Card -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -460,7 +520,145 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- Seek Interval Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <!-- Circular Photo with Accent Border -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="84dp"
+                            android:layout_height="84dp"
+                            app:cardCornerRadius="42dp"
+                            app:cardElevation="4dp"
+                            app:strokeColor="@color/accent"
+                            app:strokeWidth="2.5dp">
+
+                            <ImageView
+                                android:id="@+id/ivDevPhoto"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/dev_mani" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Developed by"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Mani Raja"
+                                android:textColor="@color/text_primary"
+                                android:textSize="20sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Lead Developer &amp; Creator"
+                                android:textColor="@color/accent"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="14dp"
+                        android:background="@color/divider" />
+
+                    <!-- Instagram Link Button -->
+                    <LinearLayout
+                        android:id="@+id/btnInstagramProfile"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_instagram_pill"
+                        android:clickable="true"
+                        android:elevation="3dp"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_instagram"
+                            app:tint="#FFFFFF" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="Follow @maniraja__ on Instagram"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/ic_open_in_new"
+                            app:tint="#FFFFFF" />
+                    </LinearLayout>
+
+                    <!-- GitHub Project Link -->
+                    <LinearLayout
+                        android:id="@+id/btnGithubProject"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="10dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="⭐ GitHub: maniraja5599/SeltosCarplay"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- CARD 2: MEDIA & CAR CONTROLS -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="CAR PLAYBACK &amp; STEERING CONTROLS"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_shortcut_card"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -544,7 +742,71 @@
                         android:layout_marginVertical="14dp"
                         android:background="@color/divider" />
 
-                    <!-- Quick Toggles in Settings Card -->
+                    <!-- Background Audio Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingVertical="4dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_now_playing"
+                            app:tint="@color/accent" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Background Audio Playback"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Keep sound playing when screen is locked or switching apps"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/switchBackgroundAudio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- CARD 3: AD BLOCKER & PRIVACY SHIELD -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="PRIVACY &amp; AD SHIELD"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_shortcut_card"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- AdBlock Toggle -->
                     <LinearLayout
                         android:id="@+id/cardAdBlockSetting"
                         android:layout_width="match_parent"
@@ -579,7 +841,7 @@
                                 android:id="@+id/tvAdBlockStatusDesc"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Block and skip all video and banner ads"
+                                android:text="Block and skip all video and banner ads (Active)"
                                 android:textColor="@color/text_secondary"
                                 android:textSize="12sp" />
                         </LinearLayout>
@@ -597,6 +859,7 @@
                         android:layout_marginVertical="8dp"
                         android:background="@color/divider" />
 
+                    <!-- Desktop Mode Toggle -->
                     <LinearLayout
                         android:id="@+id/cardDesktopSetting"
                         android:layout_width="match_parent"
@@ -648,7 +911,7 @@
                         android:layout_marginVertical="8dp"
                         android:background="@color/divider" />
 
-                    <!-- Clear Cache Option -->
+                    <!-- Clear Cache -->
                     <LinearLayout
                         android:id="@+id/cardClearCacheSetting"
                         android:layout_width="match_parent"
@@ -674,7 +937,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Clear Browser Cache"
+                                android:text="Clear Browser Cache &amp; Storage"
                                 android:textColor="@color/text_primary"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
@@ -682,7 +945,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Free storage &amp; reset web sessions"
+                                android:text="Free memory &amp; reset web session data"
                                 android:textColor="@color/text_secondary"
                                 android:textSize="12sp" />
                         </LinearLayout>
@@ -698,12 +961,20 @@
 
                 </LinearLayout>
 
-                <!-- System Details Card -->
+                <!-- CARD 4: SYSTEM & ABOUT -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="SYSTEM &amp; VEHICLE SPECS"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="24dp"
                     android:background="@drawable/bg_shortcut_card"
                     android:orientation="vertical"
                     android:padding="16dp">
@@ -711,42 +982,34 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="System &amp; Audio Details"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp"
+                        android:text="• Vehicle: Kia Seltos Secondary Display Ready"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="• Media Focus: Foreground Service Priority Locked"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="• Acceleration: GPU Rasterization &amp; Vulkan GLES"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="• Version: Kia Browser v1.0.7 (Build 8)"
+                        android:textColor="@color/accent"
+                        android:textSize="12sp"
                         android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="• Audio Focus: Foreground Service Locked (Never pauses)"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="• Car Display: Kia Seltos Secondary Display Mirror"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="• Ad Blocker: Active (Network + Script Interceptor)"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="• Build: Kia Browser v1.0.4 Release"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -1043,12 +1306,14 @@
                 android:orientation="vertical">
 
                 <ImageView
+                    android:id="@+id/ivHomeHome"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@drawable/ic_home"
                     app:tint="@color/accent" />
 
                 <TextView
+                    android:id="@+id/tvHomeHome"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
@@ -1111,7 +1376,7 @@
                     android:textSize="11sp" />
             </LinearLayout>
 
-            <!-- 4. Settings Button (Opens/scrolls to settings) -->
+            <!-- 4. Settings Button (Opens dedicated settings screen) -->
             <LinearLayout
                 android:id="@+id/btnHomeSettings"
                 android:layout_width="0dp"
@@ -1122,12 +1387,14 @@
                 android:orientation="vertical">
 
                 <ImageView
+                    android:id="@+id/ivHomeSettings"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@drawable/ic_settings"
                     app:tint="@color/text_secondary" />
 
                 <TextView
+                    android:id="@+id/tvHomeSettings"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"

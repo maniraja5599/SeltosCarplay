@@ -6,6 +6,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
@@ -29,6 +30,7 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
     private lateinit var carDisplayManager: KiaCarDisplayManager
 
     private var isHome = true
+    private var isSettings = false
     private var lastMediaTitle = "Kia Browser"
     private var isPlayingMedia = false
     private var isFullscreen = false
@@ -419,6 +421,44 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         }
         binding.btnClearCacheAction.setOnClickListener { clearCacheAction() }
 
+        // Settings Back Navigation
+        binding.btnSettingsBack.setOnClickListener {
+            showHome()
+        }
+
+        // Instagram Link: Follow @maniraja__
+        binding.btnInstagramProfile.setOnClickListener {
+            val instaUrl = "https://www.instagram.com/maniraja__/"
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(instaUrl)).apply {
+                    setPackage("com.instagram.android")
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                try {
+                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(instaUrl))
+                    startActivity(browserIntent)
+                } catch (e2: Exception) {
+                    loadUrl(instaUrl)
+                }
+            }
+        }
+
+        // GitHub Project Link
+        binding.btnGithubProject.setOnClickListener {
+            loadUrl("https://github.com/maniraja5599/SeltosCarplay")
+        }
+
+        // Background Audio Switch
+        binding.switchBackgroundAudio.isChecked = true
+        binding.switchBackgroundAudio.setOnCheckedChangeListener { _, isChecked ->
+            Toast.makeText(
+                this,
+                if (isChecked) "Background Audio Locked ON" else "Background Audio Disabled",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
         // Voice Search from Home Bottom Bar
         binding.btnHomeVoiceSearch.setOnClickListener {
             startVoiceSearch()
@@ -445,11 +485,9 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             if (isPlayingMedia) onMediaPause() else onMediaPlay()
         }
 
-        // Home Bottom Bar: Settings (Scrolls down to settings card)
+        // Home Bottom Bar: Settings (Opens dedicated Settings screen)
         binding.btnHomeSettings.setOnClickListener {
-            binding.homeFavoritesView.post {
-                binding.homeFavoritesView.smoothScrollTo(0, binding.homeFavoritesView.getChildAt(0).height)
-            }
+            showSettings()
         }
     }
 
@@ -484,6 +522,8 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
 
     private fun showHome() {
         isHome = true
+        isSettings = false
+        binding.settingsView.visibility = View.GONE
         binding.mainWebView.visibility = View.GONE
         binding.homeFavoritesView.visibility = View.VISIBLE
         binding.etSearchOrUrl.setText("")
@@ -491,6 +531,14 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         // Hide player controls, show home controls
         binding.mediaControlsGroup.visibility = View.GONE
         binding.homeControlsGroup.visibility = View.VISIBLE
+
+        val accentColor = getColor(R.color.accent)
+        val secondaryColor = getColor(R.color.text_secondary)
+
+        binding.ivHomeHome.setColorFilter(accentColor)
+        binding.tvHomeHome.setTextColor(accentColor)
+        binding.ivHomeSettings.setColorFilter(secondaryColor)
+        binding.tvHomeSettings.setTextColor(secondaryColor)
 
         // Check if there is an active media session to display "Now Playing"
         val hasActiveMedia = !lastLoadedUrl.isNullOrBlank()
@@ -500,17 +548,44 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             binding.btnBannerPlayPause.setImageResource(
                 if (isPlayingMedia) R.drawable.ic_pause else R.drawable.ic_play
             )
-            binding.ivHomeNowPlaying.setColorFilter(getColor(R.color.accent))
-            binding.tvHomeNowPlaying.setTextColor(getColor(R.color.accent))
+            binding.ivHomeNowPlaying.setColorFilter(accentColor)
+            binding.tvHomeNowPlaying.setTextColor(accentColor)
         } else {
-            binding.ivHomeNowPlaying.setColorFilter(getColor(R.color.text_secondary))
-            binding.tvHomeNowPlaying.setTextColor(getColor(R.color.text_secondary))
+            binding.ivHomeNowPlaying.setColorFilter(secondaryColor)
+            binding.tvHomeNowPlaying.setTextColor(secondaryColor)
+        }
+    }
+
+    private fun showSettings() {
+        isHome = false
+        isSettings = true
+        binding.mainWebView.visibility = View.GONE
+        binding.homeFavoritesView.visibility = View.GONE
+        binding.layoutNowPlayingBanner.visibility = View.GONE
+        binding.settingsView.visibility = View.VISIBLE
+
+        // In bottom bar, highlight Settings button and unhighlight Home button
+        binding.mediaControlsGroup.visibility = View.GONE
+        binding.homeControlsGroup.visibility = View.VISIBLE
+
+        val accentColor = getColor(R.color.accent)
+        val secondaryColor = getColor(R.color.text_secondary)
+
+        binding.ivHomeHome.setColorFilter(secondaryColor)
+        binding.tvHomeHome.setTextColor(secondaryColor)
+        binding.ivHomeSettings.setColorFilter(accentColor)
+        binding.tvHomeSettings.setTextColor(accentColor)
+
+        binding.settingsView.post {
+            binding.settingsView.scrollTo(0, 0)
         }
     }
 
     private fun showWeb() {
         if (!lastLoadedUrl.isNullOrBlank()) {
             isHome = false
+            isSettings = false
+            binding.settingsView.visibility = View.GONE
             binding.homeFavoritesView.visibility = View.GONE
             binding.layoutNowPlayingBanner.visibility = View.GONE
             binding.mainWebView.visibility = View.VISIBLE
@@ -527,6 +602,8 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
     private fun loadUrl(url: String) {
         lastLoadedUrl = url
         isHome = false
+        isSettings = false
+        binding.settingsView.visibility = View.GONE
         binding.homeFavoritesView.visibility = View.GONE
         binding.layoutNowPlayingBanner.visibility = View.GONE
         binding.mainWebView.visibility = View.VISIBLE
@@ -647,7 +724,9 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (!isHome && binding.mainWebView.canGoBack()) {
+        if (isSettings) {
+            showHome()
+        } else if (!isHome && binding.mainWebView.canGoBack()) {
             binding.mainWebView.goBack()
         } else if (!isHome) {
             showHome()
