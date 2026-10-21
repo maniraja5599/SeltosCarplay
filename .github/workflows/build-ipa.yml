@@ -45,8 +45,10 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGN_ENTITLEMENTS="" \
             2>&1 | tee build.log || {
-              echo "=== BUILD FAILED. LOG TAIL: ==="
-              tail -n 120 build.log
+              echo "=== BUILD FAILED. ERRORS DETECTED: ==="
+              grep -C 2 -E "error:" build.log || true
+              echo "=== LAST 60 LINES OF BUILD LOG: ==="
+              tail -n 60 build.log
               exit 1
             }
 

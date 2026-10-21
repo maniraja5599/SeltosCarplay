@@ -20,7 +20,8 @@ public struct BrowserContainerView: View {
             // Navigation Loading Progress Bar
             if viewModel.activeTab.isLoading {
                 ProgressView(value: viewModel.activeTab.estimatedProgress, total: 1.0)
-                    .progressViewStyle(LinearProgressViewStyle(tint: .accentColor))
+                    .progressViewStyle(LinearProgressViewStyle())
+                    .tint(.accentColor)
                     .frame(height: 2)
             } else {
                 Divider()

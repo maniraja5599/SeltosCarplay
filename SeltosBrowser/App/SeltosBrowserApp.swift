@@ -7,7 +7,6 @@ struct SeltosBrowserApp: App {
     var body: some Scene {
         WindowGroup {
             BrowserContainerView()
-                .preferredColorScheme(.none)
         }
     }
 }

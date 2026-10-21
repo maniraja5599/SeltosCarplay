@@ -68,7 +68,7 @@ public final class NowPlayingManager {
         var info = [String: Any]()
         info[MPMediaItemPropertyTitle] = title
         info[MPMediaItemPropertyArtist] = channelOrSite
-        info[MPMediaItemPropertyMediaType] = MPMediaType.anyAudioVideo.rawValue
+        info[MPMediaItemPropertyMediaType] = MPMediaType.any.rawValue
 
         if duration > 0 {
             info[MPMediaItemPropertyPlaybackDuration] = duration
