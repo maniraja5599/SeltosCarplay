@@ -107,6 +107,9 @@ public struct BrowserContainerView: View {
                 showShareSheet = true
             })
         }
+        .sheet(isPresented: $viewModel.showRemoteControlSheet) {
+            RemoteControlSheetView()
+        }
         .sheet(isPresented: $showShareSheet) {
             if let url = viewModel.activeTab.url {
                 ShareSheet(activityItems: [url])

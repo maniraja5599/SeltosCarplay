@@ -42,19 +42,29 @@ public final class NowPlayingManager {
             return .success
         }
 
+        let initialSeconds = SettingsManager.shared.seekInterval.rawValue
         commandCenter.skipForwardCommand.isEnabled = true
-        commandCenter.skipForwardCommand.preferredIntervals = [15]
+        commandCenter.skipForwardCommand.preferredIntervals = [NSNumber(value: initialSeconds)]
         commandCenter.skipForwardCommand.addTarget { [weak self] _ in
-            self?.playbackController?.seekForward(seconds: 15)
+            let step = Double(SettingsManager.shared.seekInterval.rawValue)
+            self?.playbackController?.seekForward(seconds: step)
             return .success
         }
 
         commandCenter.skipBackwardCommand.isEnabled = true
-        commandCenter.skipBackwardCommand.preferredIntervals = [15]
+        commandCenter.skipBackwardCommand.preferredIntervals = [NSNumber(value: initialSeconds)]
         commandCenter.skipBackwardCommand.addTarget { [weak self] _ in
-            self?.playbackController?.seekBackward(seconds: 15)
+            let step = Double(SettingsManager.shared.seekInterval.rawValue)
+            self?.playbackController?.seekBackward(seconds: step)
             return .success
         }
+    }
+
+    /// Dynamically updates the steering wheel and lock screen jump interval
+    public func updateSeekInterval(_ seconds: Int) {
+        let commandCenter = MPRemoteCommandCenter.shared()
+        commandCenter.skipForwardCommand.preferredIntervals = [NSNumber(value: seconds)]
+        commandCenter.skipBackwardCommand.preferredIntervals = [NSNumber(value: seconds)]
     }
 
     /// Updates the metadata visible on iPhone lock screen and Kia Seltos CarPlay display

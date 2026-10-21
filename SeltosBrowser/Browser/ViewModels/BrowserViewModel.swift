@@ -3,7 +3,7 @@ import Combine
 import WebKit
 import MediaPlayer
 
-/// Central ViewModel coordinating browser tabs, navigation, media synchronization, and privacy
+/// Central ViewModel coordinating browser tabs, navigation, media synchronization, remote control, and privacy
 public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable {
     public static let shared = BrowserViewModel()
 
@@ -13,6 +13,7 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
     @Published public var showBookmarksSheet: Bool = false
     @Published public var showHistorySheet: Bool = false
     @Published public var showSettingsSheet: Bool = false
+    @Published public var showRemoteControlSheet: Bool = false
     @Published public var isFullscreenVideo: Bool = false
     @Published public var isReaderModeActive: Bool = false
     @Published public var isHome: Bool = true
@@ -24,6 +25,7 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
     public var audioSessionManager = AudioSessionManager.shared
     public var nowPlayingManager = NowPlayingManager.shared
     public var voiceSearchManager = VoiceSearchManager.shared
+    public var remoteManager = RemoteControlManager.shared
 
     private var webViews: [UUID: WKWebView] = [:]
     private var cancellables = Set<AnyCancellable>()
@@ -46,6 +48,9 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
                 self?.objectWillChange.send()
             }
             .store(in: &cancellables)
+
+        // Start local hotspot server and cloud relay for remote control
+        remoteManager.startAll()
     }
 
     public var activeTab: BrowserTab {
@@ -208,7 +213,6 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
     public func handleDidFailLoading(for tabId: UUID, error: Error) {
         guard tabId == tabManager.activeTabId else { return }
 
-        // Don't show error if user is on Home screen
         if isHome { return }
 
         let userFriendlyMessage: String
@@ -299,11 +303,13 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
     }
 
     public func seekForward(seconds: Double) {
-        activeWebView?.evaluateJavaScript(YouTubeHelper.seekScript(delta: seconds), completionHandler: nil)
+        let step = seconds > 0 ? seconds : Double(settingsManager.seekInterval.rawValue)
+        activeWebView?.evaluateJavaScript(YouTubeHelper.seekScript(delta: step), completionHandler: nil)
     }
 
     public func seekBackward(seconds: Double) {
-        activeWebView?.evaluateJavaScript(YouTubeHelper.seekScript(delta: -seconds), completionHandler: nil)
+        let step = seconds > 0 ? seconds : Double(settingsManager.seekInterval.rawValue)
+        activeWebView?.evaluateJavaScript(YouTubeHelper.seekScript(delta: -step), completionHandler: nil)
     }
 
     // MARK: - Privacy & Data Deletion

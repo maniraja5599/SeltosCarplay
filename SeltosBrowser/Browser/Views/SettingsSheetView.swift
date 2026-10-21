@@ -1,7 +1,7 @@
 import SwiftUI
 import WebKit
 
-/// Settings view providing page actions, Bookmarks access, Desktop mode, and car integration status
+/// Settings view providing page actions, Remote Control setup, Seek Interval configuration, and privacy controls
 public struct SettingsSheetView: View {
     @ObservedObject var viewModel: BrowserViewModel
     @ObservedObject private var settings = SettingsManager.shared
@@ -21,7 +21,36 @@ public struct SettingsSheetView: View {
     public var body: some View {
         NavigationStack {
             Form {
-                // Bookmarks & Favorites Access (Moved to Settings as requested)
+                // 1. Wireless Remote Control Section (Hotspot + 4G/5G Relay)
+                Section(header: Text("Wireless Car Remote")) {
+                    Button(action: {
+                        dismiss()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            viewModel.showRemoteControlSheet = true
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "antenna.radiowaves.left.and.right")
+                                .foregroundColor(.accentColor)
+                                .font(.system(size: 20))
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Open Remote Control")
+                                    .foregroundColor(.primary)
+                                    .fontWeight(.medium)
+                                Text("PIN: \(settings.remotePIN) • QR Code & Hotspot")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.forward")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+
+                // 2. Bookmarks & Favorites Access
                 Section(header: Text("Bookmarks & Favorites")) {
                     Button(action: {
                         dismiss()
@@ -40,10 +69,10 @@ public struct SettingsSheetView: View {
                     }
                 }
 
-                // Current Page Quick Actions (Available when a website is open)
+                // 3. Current Page Quick Actions (Available when a website is open)
                 if !viewModel.isHome {
                     Section(header: Text("Current Page")) {
-                        // 1. Share
+                        // Share
                         Button(action: {
                             dismiss()
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -54,7 +83,7 @@ public struct SettingsSheetView: View {
                                 .foregroundColor(.primary)
                         }
 
-                        // 2. Reader Mode
+                        // Reader Mode
                         Toggle(isOn: Binding(
                             get: { viewModel.isReaderModeActive },
                             set: { _ in viewModel.toggleReaderMode() }
@@ -62,7 +91,7 @@ public struct SettingsSheetView: View {
                             Label("Reader Mode", systemImage: "doc.text.fill")
                         }
 
-                        // 3. Request Desktop Site
+                        // Request Desktop Site
                         Toggle(isOn: Binding(
                             get: { settings.requestDesktopSites },
                             set: { _ in viewModel.toggleDesktopSite() }
@@ -70,7 +99,7 @@ public struct SettingsSheetView: View {
                             Label("Request Desktop Site", systemImage: "desktopcomputer")
                         }
 
-                        // 4. Force Video Fullscreen
+                        // Force Video Fullscreen
                         Button(action: {
                             viewModel.triggerVideoFullscreen()
                             dismiss()
@@ -79,7 +108,7 @@ public struct SettingsSheetView: View {
                                 .foregroundColor(.primary)
                         }
 
-                        // 5. Add to Bookmarks
+                        // Add to Bookmarks
                         Button(action: {
                             if let url = viewModel.activeTab.url {
                                 viewModel.bookmarkManager.addBookmark(
@@ -97,7 +126,21 @@ public struct SettingsSheetView: View {
                     }
                 }
 
-                // Search Engine Configuration
+                // 4. Media Seek Interval & Steering Wheel Controls
+                Section(
+                    header: Text("Media Playback & Steering Wheel"),
+                    footer: Text("Sets how many seconds media skips when pressing steering wheel buttons or the wireless remote.")
+                ) {
+                    Picker("Seek Jump Interval", selection: $settings.seekInterval) {
+                        ForEach(SeekInterval.allCases) { interval in
+                            Text(interval.title).tag(interval)
+                        }
+                    }
+
+                    Toggle("Allow Inline Media Playback", isOn: $settings.allowInlineMediaPlayback)
+                }
+
+                // 5. Search Engine Configuration
                 Section(header: Text("Search Engine")) {
                     Picker("Default Engine", selection: $settings.searchEngine) {
                         ForEach(SearchEngine.allCases) { engine in
@@ -106,29 +149,14 @@ public struct SettingsSheetView: View {
                     }
                 }
 
-                // Web Capabilities & Security
+                // 6. Web Capabilities & Security
                 Section(header: Text("Security & Privacy")) {
                     Toggle("Enforce HTTPS Only", isOn: $settings.enforceHTTPSOnly)
                     Toggle("Block Intrusive Ads & Trackers", isOn: $settings.blockAdsAndTrackers)
                     Toggle("Block Popups", isOn: $settings.blockPopups)
                 }
 
-                // Media & Vehicle Playback
-                Section(
-                    header: Text("Vehicle Audio & CarPlay"),
-                    footer: Text("Audio playback stays active when screen is locked or when running via Apple CarPlay in your Kia Seltos.")
-                ) {
-                    Toggle("Allow Inline Media Playback", isOn: $settings.allowInlineMediaPlayback)
-                    HStack {
-                        Label("Steering Wheel Controls", systemImage: "steeringwheel")
-                        Spacer()
-                        Text("Seek ±15s / Pause")
-                            .foregroundColor(.secondary)
-                            .font(.subheadline)
-                    }
-                }
-
-                // Privacy & Storage Wipe
+                // 7. Privacy & Storage Wipe
                 Section(
                     header: Text("Privacy & Storage"),
                     footer: Text("Clears all cached web files, HTTP cookies, local storage databases, and browsing history from this iPhone.")
@@ -151,7 +179,7 @@ public struct SettingsSheetView: View {
                     .disabled(isClearingData)
                 }
 
-                // About & Custom Logo
+                // 8. About & Custom Logo
                 Section(header: Text("About Kia Browser")) {
                     HStack(spacing: 16) {
                         Image("AppLogo")
@@ -164,7 +192,7 @@ public struct SettingsSheetView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Kia Browser")
                                 .font(.headline)
-                            Text("Electric Edition • Build 3")
+                            Text("Electric Edition • Build 5")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -184,9 +212,9 @@ public struct SettingsSheetView: View {
                             .foregroundColor(.secondary)
                     }
                     HStack {
-                        Text("Search Provider")
+                        Text("Wireless Remote")
                         Spacer()
-                        Text("Google Voice & Web")
+                        Text("Hotspot + 4G/5G Hybrid")
                             .foregroundColor(.secondary)
                     }
                 }

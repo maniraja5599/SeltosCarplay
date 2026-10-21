@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Default home page displaying pinned favorites, shortcuts, and custom logo badge
+/// Default home page displaying pinned favorites, shortcuts, remote access banner, and custom logo badge
 public struct HomeFavoritesView: View {
     @ObservedObject var viewModel: BrowserViewModel
 
@@ -10,7 +10,7 @@ public struct HomeFavoritesView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: 20) {
                 // Top Custom Logo Badge (No text)
                 VStack(spacing: 0) {
                     Image("AppLogo")
@@ -20,7 +20,40 @@ public struct HomeFavoritesView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                         .shadow(color: Color.blue.opacity(0.4), radius: 10, x: 0, y: 5)
                 }
-                .padding(.top, 16)
+                .padding(.top, 14)
+
+                // Wireless Remote Quick Access Banner
+                Button(action: {
+                    viewModel.showRemoteControlSheet = true
+                }) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                            .font(.system(size: 22))
+                            .foregroundColor(.accentColor)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Android Wireless Remote")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+
+                            Text("PIN: \(viewModel.settingsManager.remotePIN) • Tap to view QR Code")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "qrcode")
+                            .font(.system(size: 20))
+                            .foregroundColor(.accentColor)
+                    }
+                    .padding(12)
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(14)
+                    .padding(.horizontal, 20)
+                }
+                .buttonStyle(ScaleButtonStyle())
 
                 // Favorites Grid Section
                 VStack(alignment: .leading, spacing: 14) {
@@ -69,7 +102,7 @@ public struct HomeFavoritesView: View {
                             .fontWeight(.semibold)
                     }
 
-                    Text("Connected via USB: Media audio streams directly through car speakers. Control playback using steering wheel buttons and Now Playing HUD.")
+                    Text("Connected via USB: Media audio streams directly through car speakers. Seek jump: \(viewModel.settingsManager.seekInterval.title).")
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineSpacing(2)
@@ -99,14 +132,5 @@ public struct HomeFavoritesView: View {
         case "wikipedia", "x (twitter)": return .primary
         default: return .accentColor
         }
-    }
-}
-
-/// Subtle spring animation on tap
-public struct ScaleButtonStyle: ButtonStyle {
-    public func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.92 : 1.0)
-            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
