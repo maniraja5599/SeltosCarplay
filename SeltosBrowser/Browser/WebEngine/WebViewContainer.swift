@@ -24,6 +24,14 @@ public struct WebViewContainer: UIViewRepresentable {
         let isDesktop = viewModel.settingsManager.requestDesktopSites
         configuration.defaultWebpagePreferences.preferredContentMode = isDesktop ? .desktop : .mobile
 
+        // Add anti-background pause user script at document start so video never pauses on screen lock
+        let antiPauseScript = WKUserScript(
+            source: YouTubeHelper.antiBackgroundPauseScript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: false
+        )
+        configuration.userContentController.addUserScript(antiPauseScript)
+
         // Add user script for media state and fullscreen observation
         let userScript = WKUserScript(
             source: YouTubeHelper.mediaObserverScript,

@@ -192,7 +192,7 @@ public struct SettingsSheetView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Kia Browser")
                                 .font(.headline)
-                            Text("Electric Edition • Build 5")
+                            Text("Electric Edition • Build 6")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }

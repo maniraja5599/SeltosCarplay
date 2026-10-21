@@ -23,13 +23,15 @@ targets:
     platform: iOS
     sources:
       - path: SeltosBrowser
+    entitlements:
+      path: SeltosBrowser/Entitlements/SeltosBrowser.entitlements
     info:
       path: SeltosBrowser/App/Info.plist
       properties:
         CFBundleDisplayName: "Kia Browser"
         CFBundleName: "Kia Browser"
-        CFBundleShortVersionString: "1.0.4"
-        CFBundleVersion: "5"
+        CFBundleShortVersionString: "1.0.5"
+        CFBundleVersion: "6"
         UILaunchStoryboardName: "LaunchScreen"
         NSLocationWhenInUseUsageDescription: "Kia Browser uses your motion state to detect vehicle movement."
         NSMicrophoneUsageDescription: "Kia Browser requires microphone access for voice search and web audio features."

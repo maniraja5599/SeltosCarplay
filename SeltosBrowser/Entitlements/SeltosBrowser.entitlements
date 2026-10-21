@@ -2,14 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- 
-		CarPlay Audio Entitlement:
-		Uncomment when building with an approved Paid Apple Developer Account.
-		Kept commented out for Free Apple ID / Sideloadly to avoid signature mismatch.
-	-->
-	<!--
 	<key>com.apple.developer.carplay-audio</key>
 	<true/>
-	-->
 </dict>
 </plist>

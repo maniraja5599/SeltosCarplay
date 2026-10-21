@@ -1,6 +1,6 @@
 import Foundation
 
-/// Helper for coordinating YouTube web interactions, HTML5 media observation, and playback scripts
+/// Helper for coordinating YouTube web interactions, HTML5 media observation, background playback, and seek scripts
 public struct YouTubeHelper {
 
     /// Checks if a given URL belongs to YouTube
@@ -8,6 +8,25 @@ public struct YouTubeHelper {
         guard let host = url?.host?.lowercased() else { return false }
         return host.contains("youtube.com") || host.contains("youtu.be")
     }
+
+    /// Script injected at document start to trick YouTube/media sites into thinking the page is ALWAYS active and visible
+    public static let antiBackgroundPauseScript = """
+    (function() {
+        try {
+            Object.defineProperty(document, 'hidden', { get: () => false, configurable: true });
+            Object.defineProperty(document, 'visibilityState', { get: () => 'visible', configurable: true });
+            Object.defineProperty(document, 'webkitVisibilityState', { get: () => 'visible', configurable: true });
+            Object.defineProperty(document, 'webkitHidden', { get: () => false, configurable: true });
+
+            document.addEventListener('visibilitychange', function(e) {
+                e.stopImmediatePropagation();
+            }, true);
+            document.addEventListener('webkitvisibilitychange', function(e) {
+                e.stopImmediatePropagation();
+            }, true);
+        } catch(e) {}
+    })();
+    """
 
     /// User script injected into WKWebView to observe HTML5 <video> elements, fullscreen events, and relay state to Swift
     public static let mediaObserverScript = """
@@ -56,7 +75,7 @@ public struct YouTubeHelper {
             video.addEventListener('playing', notifyState);
             video.addEventListener('pause', notifyState);
             video.addEventListener('timeupdate', () => {
-                if (Math.floor(video.currentTime) % 5 === 0) {
+                if (Math.floor(video.currentTime) % 2 === 0) {
                     notifyState();
                 }
             });
@@ -95,9 +114,20 @@ public struct YouTubeHelper {
     })();
     """
 
-    /// JavaScript to toggle play/pause on the first active video element
+    /// JavaScript to toggle play/pause on YouTube player or first active video element
     public static let togglePlayPauseScript = """
     (function() {
+        const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
+        if (player && typeof player.getPlayerState === 'function') {
+            const state = player.getPlayerState();
+            if (state === 1) { // 1 = playing
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+            return;
+        }
+
         const video = document.querySelector('video');
         if (video) {
             if (video.paused) {
@@ -112,6 +142,11 @@ public struct YouTubeHelper {
     /// JavaScript to force play
     public static let playScript = """
     (function() {
+        const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
+        if (player && typeof player.playVideo === 'function') {
+            player.playVideo();
+            return;
+        }
         const video = document.querySelector('video');
         if (video && video.paused) {
             video.play();
@@ -122,6 +157,11 @@ public struct YouTubeHelper {
     /// JavaScript to force pause
     public static let pauseScript = """
     (function() {
+        const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
+        if (player && typeof player.pauseVideo === 'function') {
+            player.pauseVideo();
+            return;
+        }
         const video = document.querySelector('video');
         if (video && !video.paused) {
             video.pause();
@@ -129,13 +169,43 @@ public struct YouTubeHelper {
     })();
     """
 
-    /// JavaScript to seek backward/forward relative to current position
+    /// JavaScript to seek backward/forward relative to current position (works with YouTube Player API & standard HTML5 video)
     public static func seekScript(delta: Double) -> String {
         return """
         (function() {
+            const delta = \(delta);
+            const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
+            if (player && typeof player.seekBy === 'function') {
+                player.seekBy(delta);
+                return;
+            }
+            if (player && typeof player.getCurrentTime === 'function' && typeof player.seekTo === 'function') {
+                const current = player.getCurrentTime() || 0;
+                player.seekTo(Math.max(0, current + delta), true);
+                return;
+            }
+
             const video = document.querySelector('video');
             if (video) {
-                video.currentTime = Math.max(0, Math.min(video.duration || 0, video.currentTime + (\(delta))));
+                video.currentTime = Math.max(0, Math.min(video.duration || 0, video.currentTime + delta));
+            }
+        })();
+        """
+    }
+
+    /// JavaScript to seek to an absolute timestamp in seconds (for CarPlay scrubber bar)
+    public static func seekToScript(position: Double) -> String {
+        return """
+        (function() {
+            const pos = \(position);
+            const player = document.getElementById('movie_player') || document.querySelector('.html5-video-player');
+            if (player && typeof player.seekTo === 'function') {
+                player.seekTo(pos, true);
+                return;
+            }
+            const video = document.querySelector('video');
+            if (video) {
+                video.currentTime = Math.max(0, Math.min(video.duration || 0, pos));
             }
         })();
         """

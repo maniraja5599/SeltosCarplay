@@ -8,6 +8,7 @@ public protocol MediaPlaybackControllable: AnyObject {
     func togglePlayPauseMedia()
     func seekForward(seconds: Double)
     func seekBackward(seconds: Double)
+    func seekTo(seconds: Double)
 }
 
 /// Manages system Now Playing lock-screen and CarPlay dashboard metadata and steering wheel controls
@@ -24,6 +25,7 @@ public final class NowPlayingManager {
     private func setupRemoteCommands() {
         let commandCenter = MPRemoteCommandCenter.shared()
 
+        // 1. Play / Pause / Toggle
         commandCenter.playCommand.isEnabled = true
         commandCenter.playCommand.addTarget { [weak self] _ in
             self?.playbackController?.playMedia()
@@ -42,6 +44,7 @@ public final class NowPlayingManager {
             return .success
         }
 
+        // 2. Skip Forward / Backward (Discrete step, default 5s)
         let initialSeconds = SettingsManager.shared.seekInterval.rawValue
         commandCenter.skipForwardCommand.isEnabled = true
         commandCenter.skipForwardCommand.preferredIntervals = [NSNumber(value: initialSeconds)]
@@ -56,6 +59,35 @@ public final class NowPlayingManager {
         commandCenter.skipBackwardCommand.addTarget { [weak self] _ in
             let step = Double(SettingsManager.shared.seekInterval.rawValue)
             self?.playbackController?.seekBackward(seconds: step)
+            return .success
+        }
+
+        // 3. Continuous Seek Forward / Backward (Holding steering wheel buttons)
+        commandCenter.seekForwardCommand.isEnabled = true
+        commandCenter.seekForwardCommand.addTarget { [weak self] event in
+            if let seekEvent = event as? MPSeekCommandEvent, seekEvent.type == .beginSeeking {
+                let step = Double(SettingsManager.shared.seekInterval.rawValue)
+                self?.playbackController?.seekForward(seconds: step)
+            }
+            return .success
+        }
+
+        commandCenter.seekBackwardCommand.isEnabled = true
+        commandCenter.seekBackwardCommand.addTarget { [weak self] event in
+            if let seekEvent = event as? MPSeekCommandEvent, seekEvent.type == .beginSeeking {
+                let step = Double(SettingsManager.shared.seekInterval.rawValue)
+                self?.playbackController?.seekBackward(seconds: step)
+            }
+            return .success
+        }
+
+        // 4. Change Playback Position (CarPlay Infotainment Scrubber Bar & Touch Seek)
+        commandCenter.changePlaybackPositionCommand.isEnabled = true
+        commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
+            guard let posEvent = event as? MPChangePlaybackPositionCommandEvent else {
+                return .commandFailed
+            }
+            self?.playbackController?.seekTo(seconds: posEvent.positionTime)
             return .success
         }
     }
@@ -85,12 +117,19 @@ public final class NowPlayingManager {
             info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = elapsedTime
         }
         info[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
+        info[MPNowPlayingInfoPropertyDefaultPlaybackRate] = 1.0
 
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+
+        // Keep background session alive during media playback
+        if isPlaying {
+            AudioSessionManager.shared.startBackgroundAudioKeepAlive()
+        }
     }
 
     /// Clears Now Playing metadata when media terminates
     public func clearNowPlaying() {
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        AudioSessionManager.shared.stopBackgroundAudioKeepAlive()
     }
 }

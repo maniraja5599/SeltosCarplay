@@ -312,6 +312,10 @@ public final class BrowserViewModel: ObservableObject, MediaPlaybackControllable
         activeWebView?.evaluateJavaScript(YouTubeHelper.seekScript(delta: -step), completionHandler: nil)
     }
 
+    public func seekTo(seconds: Double) {
+        activeWebView?.evaluateJavaScript(YouTubeHelper.seekToScript(position: seconds), completionHandler: nil)
+    }
+
     // MARK: - Privacy & Data Deletion
 
     public func clearAllBrowsingData(completion: @escaping () -> Void) {
