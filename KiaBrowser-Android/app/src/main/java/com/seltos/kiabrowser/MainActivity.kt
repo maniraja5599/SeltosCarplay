@@ -30,6 +30,8 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
 
     private var isHome = true
     private var lastMediaTitle = "Kia Browser"
+    private var isPlayingMedia = false
+    private var isFullscreen = false
 
     private val speechRecognizerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -145,20 +147,43 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
 
         applyDesktopMode(settingsManager.isDesktopMode)
 
-        // Inject anti-pause at document start before YouTube page scripts execute
+        // Inject anti-pause and ad-block scripts at document start before YouTube page scripts execute
         if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
             WebViewCompat.addDocumentStartJavaScript(
                 binding.mainWebView,
                 YouTubeWebHelper.ANTI_BACKGROUND_PAUSE_SCRIPT,
                 setOf("*")
             )
+            WebViewCompat.addDocumentStartJavaScript(
+                binding.mainWebView,
+                YouTubeWebHelper.AD_AND_PROMO_SUPPRESSION_SCRIPT,
+                setOf("*")
+            )
         }
 
         binding.mainWebView.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                val url = request?.url?.toString()
+                if (settingsManager.isAdBlockEnabled && YouTubeWebHelper.isAdUrl(url)) {
+                    return WebResourceResponse(
+                        "text/plain",
+                        "UTF-8",
+                        java.io.ByteArrayInputStream(ByteArray(0))
+                    )
+                }
+                return super.shouldInterceptRequest(view, request)
+            }
+
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 binding.loadingProgress.visibility = View.VISIBLE
                 binding.mainWebView.evaluateJavascript(YouTubeWebHelper.ANTI_BACKGROUND_PAUSE_SCRIPT, null)
+                if (settingsManager.isAdBlockEnabled) {
+                    binding.mainWebView.evaluateJavascript(YouTubeWebHelper.AD_AND_PROMO_SUPPRESSION_SCRIPT, null)
+                }
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -172,8 +197,13 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
 
                 val title = view?.title ?: "Kia Browser"
                 lastMediaTitle = title
+                isPlayingMedia = true
+                updatePlayPauseButtonUi(true)
                 mediaSessionManager.updateMetadata(title, "Kia Browser", 0)
                 mediaSessionManager.updatePlaybackState(true, 0)
+
+                // Bring playback controls to the front of scroll view
+                binding.bottomBar.post { binding.bottomBar.scrollTo(0, 0) }
 
                 // Start Foreground Service so Android never kills background playback
                 KiaPlaybackService.startService(this@MainActivity, title, true)
@@ -219,6 +249,34 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             }
         }
 
+        // Play / Pause Toggle
+        binding.btnNavPlayPause.setOnClickListener {
+            if (isPlayingMedia) {
+                onMediaPause()
+            } else {
+                onMediaPlay()
+            }
+        }
+
+        // Previous Video Track
+        binding.btnNavPrevious.setOnClickListener {
+            onMediaPrevious()
+        }
+
+        // Next Video Track
+        binding.btnNavNext.setOnClickListener {
+            onMediaNext()
+        }
+
+        // Reload
+        binding.btnNavReload.setOnClickListener {
+            if (isHome) {
+                showHome()
+            } else {
+                binding.mainWebView.reload()
+            }
+        }
+
         // Bottom Navigation
         binding.btnNavBack.setOnClickListener {
             if (binding.mainWebView.canGoBack() && !isHome) {
@@ -261,6 +319,31 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             if (!isHome) {
                 binding.mainWebView.reload()
             }
+        }
+
+        // AdBlock Toggle
+        binding.btnToggleAdBlock.setColorFilter(
+            if (settingsManager.isAdBlockEnabled) getColor(R.color.accent) else getColor(R.color.text_secondary)
+        )
+        binding.btnToggleAdBlock.setOnClickListener {
+            val newMode = !settingsManager.isAdBlockEnabled
+            settingsManager.isAdBlockEnabled = newMode
+            binding.btnToggleAdBlock.setColorFilter(
+                if (newMode) getColor(R.color.accent) else getColor(R.color.text_secondary)
+            )
+            Toast.makeText(this, if (newMode) "Ad Blocker: ENABLED (All Ads Blocked)" else "Ad Blocker: DISABLED", Toast.LENGTH_SHORT).show()
+            if (!isHome) {
+                binding.mainWebView.reload()
+            }
+        }
+
+        // Fullscreen Toggle
+        binding.btnToggleFullscreen.setOnClickListener {
+            isFullscreen = !isFullscreen
+            binding.topBar.visibility = if (isFullscreen) View.GONE else View.VISIBLE
+            binding.btnToggleFullscreen.setImageResource(
+                if (isFullscreen) R.drawable.ic_fullscreen_exit else R.drawable.ic_fullscreen
+            )
         }
     }
 
@@ -322,18 +405,41 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         binding.mainWebView.settings.userAgentString = if (isDesktop) desktopUA else null
     }
 
+    private fun updatePlayPauseButtonUi(isPlaying: Boolean) {
+        isPlayingMedia = isPlaying
+        runOnUiThread {
+            binding.btnNavPlayPause.setImageResource(
+                if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+            )
+        }
+    }
+
     // MARK: - MediaControlListener (Steering wheel and buttons)
 
     override fun onMediaPlay() {
         binding.mainWebView.evaluateJavascript(YouTubeWebHelper.TOGGLE_PLAY_PAUSE_SCRIPT, null)
         carDisplayManager.currentPresentation?.togglePlayPause()
+        updatePlayPauseButtonUi(true)
+        mediaSessionManager.updatePlaybackState(true, 0)
         KiaPlaybackService.startService(this, lastMediaTitle, true)
     }
 
     override fun onMediaPause() {
         binding.mainWebView.evaluateJavascript(YouTubeWebHelper.TOGGLE_PLAY_PAUSE_SCRIPT, null)
         carDisplayManager.currentPresentation?.togglePlayPause()
+        updatePlayPauseButtonUi(false)
+        mediaSessionManager.updatePlaybackState(false, 0)
         KiaPlaybackService.startService(this, lastMediaTitle, false)
+    }
+
+    override fun onMediaNext() {
+        binding.mainWebView.evaluateJavascript(YouTubeWebHelper.NEXT_TRACK_SCRIPT, null)
+        carDisplayManager.currentPresentation?.nextVideo()
+    }
+
+    override fun onMediaPrevious() {
+        binding.mainWebView.evaluateJavascript(YouTubeWebHelper.PREV_TRACK_SCRIPT, null)
+        carDisplayManager.currentPresentation?.previousVideo()
     }
 
     override fun onMediaSeekForward(deltaSeconds: Int) {
@@ -355,7 +461,7 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
     // MARK: - KiaPlaybackService.PlaybackCallback
 
     override fun onServicePlayPause() {
-        onMediaPlay()
+        if (isPlayingMedia) onMediaPause() else onMediaPlay()
     }
 
     override fun onServiceRewind(seconds: Int) {
@@ -364,6 +470,14 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
 
     override fun onServiceForward(seconds: Int) {
         onMediaSeekForward(seconds)
+    }
+
+    override fun onServiceNext() {
+        onMediaNext()
+    }
+
+    override fun onServicePrevious() {
+        onMediaPrevious()
     }
 
     @Deprecated("Deprecated in Java")

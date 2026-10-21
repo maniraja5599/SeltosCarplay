@@ -469,85 +469,192 @@
         </ScrollView>
     </FrameLayout>
 
-    <!-- 3. Bottom Navigation Toolbar -->
-    <LinearLayout
+    <!-- 3. Bottom Navigation Toolbar (Horizontal Scrolling) -->
+    <HorizontalScrollView
         android:id="@+id/bottomBar"
         android:layout_width="0dp"
-        android:layout_height="56dp"
+        android:layout_height="58dp"
         android:background="@color/surface_dark"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:fillViewport="true"
+        android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- Back -->
-        <ImageButton
-            android:id="@+id/btnNavBack"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:id="@+id/bottomBarContainer"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Back"
-            android:src="@drawable/ic_arrow_back"
-            app:tint="@color/text_secondary" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp">
 
-        <!-- Forward -->
-        <ImageButton
-            android:id="@+id/btnNavForward"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Forward"
-            android:src="@drawable/ic_arrow_forward"
-            app:tint="@color/text_secondary" />
+            <!-- 1. Play / Pause (First & Prominent) -->
+            <ImageButton
+                android:id="@+id/btnNavPlayPause"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="4dp"
+                android:background="@drawable/bg_circle_play"
+                android:contentDescription="Play/Pause"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_play"
+                app:tint="@color/background_dark" />
 
-        <!-- Home -->
-        <ImageButton
-            android:id="@+id/btnNavHome"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Home"
-            android:src="@drawable/ic_home"
-            app:tint="@color/accent" />
+            <!-- 2. Previous Video -->
+            <ImageButton
+                android:id="@+id/btnNavPrevious"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Previous Track"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_skip_previous"
+                app:tint="@color/text_primary" />
 
-        <!-- Seek -5s -->
-        <Button
-            android:id="@+id/btnNavRewind5"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="-5s"
-            android:textColor="@color/accent"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+            <!-- 3. Seek -5s -->
+            <Button
+                android:id="@+id/btnNavRewind5"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:minWidth="48dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="2dp"
+                android:paddingHorizontal="6dp"
+                android:text="-5s"
+                android:textColor="@color/accent"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
-        <!-- Seek +5s -->
-        <Button
-            android:id="@+id/btnNavForward5"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="+5s"
-            android:textColor="@color/accent"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+            <!-- 4. Seek +5s -->
+            <Button
+                android:id="@+id/btnNavForward5"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:minWidth="48dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="2dp"
+                android:paddingHorizontal="6dp"
+                android:text="+5s"
+                android:textColor="@color/accent"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
-        <!-- Desktop Mode Toggle -->
-        <ImageButton
-            android:id="@+id/btnToggleDesktop"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Desktop Mode"
-            android:src="@drawable/ic_desktop_windows"
-            app:tint="@color/text_secondary" />
-    </LinearLayout>
+            <!-- 5. Next Video -->
+            <ImageButton
+                android:id="@+id/btnNavNext"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Next Track"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_skip_next"
+                app:tint="@color/text_primary" />
+
+            <!-- Divider -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="24dp"
+                android:layout_marginHorizontal="6dp"
+                android:background="@color/divider" />
+
+            <!-- 6. Home -->
+            <ImageButton
+                android:id="@+id/btnNavHome"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Home"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_home"
+                app:tint="@color/accent" />
+
+            <!-- 7. Web Back -->
+            <ImageButton
+                android:id="@+id/btnNavBack"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@color/text_secondary" />
+
+            <!-- 8. Web Forward -->
+            <ImageButton
+                android:id="@+id/btnNavForward"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Forward"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_arrow_forward"
+                app:tint="@color/text_secondary" />
+
+            <!-- 9. Reload -->
+            <ImageButton
+                android:id="@+id/btnNavReload"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Reload"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_refresh"
+                app:tint="@color/text_secondary" />
+
+            <!-- 10. Desktop Mode Toggle -->
+            <ImageButton
+                android:id="@+id/btnToggleDesktop"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Desktop Mode"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_desktop_windows"
+                app:tint="@color/text_secondary" />
+
+            <!-- 11. AdBlock Shield Toggle -->
+            <ImageButton
+                android:id="@+id/btnToggleAdBlock"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Ad Blocker"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_shield"
+                app:tint="@color/accent" />
+
+            <!-- 12. Fullscreen Toggle -->
+            <ImageButton
+                android:id="@+id/btnToggleFullscreen"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginHorizontal="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Fullscreen"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_fullscreen"
+                app:tint="@color/text_secondary" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

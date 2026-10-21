@@ -82,6 +82,16 @@
         android:paddingHorizontal="16dp"
         android:paddingVertical="8dp">
 
+        <!-- Previous Video Track -->
+        <ImageButton
+            android:id="@+id/btnCarPrevious"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Previous Video"
+            android:src="@drawable/ic_skip_previous"
+            app:tint="#FFFFFF" />
+
         <!-- 5s Rewind -->
         <ImageButton
             android:id="@+id/btnCarRewind5"
@@ -131,6 +141,16 @@
             android:contentDescription="Forward 5s"
             android:src="@drawable/ic_forward_5"
             app:tint="#00E5FF" />
+
+        <!-- Next Video Track -->
+        <ImageButton
+            android:id="@+id/btnCarNext"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Next Video"
+            android:src="@drawable/ic_skip_next"
+            app:tint="#FFFFFF" />
 
         <View
             android:layout_width="1dp"

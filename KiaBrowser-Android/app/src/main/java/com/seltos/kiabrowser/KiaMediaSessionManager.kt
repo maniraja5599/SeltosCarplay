@@ -11,6 +11,8 @@ interface MediaControlListener {
     fun onMediaSeekForward(deltaSeconds: Int)
     fun onMediaSeekBackward(deltaSeconds: Int)
     fun onMediaSeekTo(positionMs: Long)
+    fun onMediaNext()
+    fun onMediaPrevious()
 }
 
 class KiaMediaSessionManager(
@@ -42,13 +44,11 @@ class KiaMediaSessionManager(
                 }
 
                 override fun onSkipToNext() {
-                    val step = SettingsManager.getInstance(context).seekInterval
-                    listener.onMediaSeekForward(step)
+                    listener.onMediaNext()
                 }
 
                 override fun onSkipToPrevious() {
-                    val step = SettingsManager.getInstance(context).seekInterval
-                    listener.onMediaSeekBackward(step)
+                    listener.onMediaPrevious()
                 }
 
                 override fun onFastForward() {

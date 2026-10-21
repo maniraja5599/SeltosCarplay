@@ -29,6 +29,8 @@ class KiaPlaybackService : Service() {
         const val ACTION_PLAY_PAUSE = "com.seltos.kiabrowser.PLAY_PAUSE"
         const val ACTION_REWIND = "com.seltos.kiabrowser.REWIND"
         const val ACTION_FORWARD = "com.seltos.kiabrowser.FORWARD"
+        const val ACTION_NEXT = "com.seltos.kiabrowser.NEXT"
+        const val ACTION_PREVIOUS = "com.seltos.kiabrowser.PREVIOUS"
         const val EXTRA_TITLE = "extra_title"
         const val EXTRA_IS_PLAYING = "extra_is_playing"
 
@@ -59,6 +61,8 @@ class KiaPlaybackService : Service() {
         fun onServicePlayPause()
         fun onServiceRewind(seconds: Int)
         fun onServiceForward(seconds: Int)
+        fun onServiceNext()
+        fun onServicePrevious()
     }
 
     override fun onCreate() {
@@ -89,6 +93,12 @@ class KiaPlaybackService : Service() {
             ACTION_FORWARD -> {
                 val step = SettingsManager.getInstance(this).seekInterval
                 activeCallback?.onServiceForward(step)
+            }
+            ACTION_NEXT -> {
+                activeCallback?.onServiceNext()
+            }
+            ACTION_PREVIOUS -> {
+                activeCallback?.onServicePrevious()
             }
             ACTION_STOP_PLAYBACK -> {
                 stopForeground(true)

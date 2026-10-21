@@ -25,6 +25,8 @@ class KiaCarPresentation(
     private lateinit var btnCarBack: ImageButton
     private lateinit var btnCarRefresh: ImageButton
     private lateinit var btnCarPlayPause: ImageButton
+    private lateinit var btnCarPrevious: ImageButton
+    private lateinit var btnCarNext: ImageButton
     private lateinit var btnCarRewind5: ImageButton
     private lateinit var btnCarForward5: ImageButton
     private lateinit var btnCarFullscreen: ImageButton
@@ -43,6 +45,8 @@ class KiaCarPresentation(
         btnCarBack = findViewById(R.id.btnCarBack)
         btnCarRefresh = findViewById(R.id.btnCarRefresh)
         btnCarPlayPause = findViewById(R.id.btnCarPlayPause)
+        btnCarPrevious = findViewById(R.id.btnCarPrevious)
+        btnCarNext = findViewById(R.id.btnCarNext)
         btnCarRewind5 = findViewById(R.id.btnCarRewind5)
         btnCarForward5 = findViewById(R.id.btnCarForward5)
         btnCarFullscreen = findViewById(R.id.btnCarFullscreen)
@@ -78,11 +82,16 @@ class KiaCarPresentation(
             settings.userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
 
-        // Inject anti-pause at document start before YouTube page scripts execute
+        // Inject anti-pause and ad-block at document start before YouTube page scripts execute
         if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
             WebViewCompat.addDocumentStartJavaScript(
                 carWebView,
                 YouTubeWebHelper.ANTI_BACKGROUND_PAUSE_SCRIPT,
+                setOf("*")
+            )
+            WebViewCompat.addDocumentStartJavaScript(
+                carWebView,
+                YouTubeWebHelper.AD_AND_PROMO_SUPPRESSION_SCRIPT,
                 setOf("*")
             )
         }
@@ -90,9 +99,25 @@ class KiaCarPresentation(
         carWebView.addJavascriptInterface(CarMediaBridge(), "CarMediaBridge")
 
         carWebView.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                val url = request?.url?.toString()
+                if (YouTubeWebHelper.isAdUrl(url)) {
+                    return WebResourceResponse(
+                        "text/plain",
+                        "UTF-8",
+                        java.io.ByteArrayInputStream(ByteArray(0))
+                    )
+                }
+                return super.shouldInterceptRequest(view, request)
+            }
+
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 carWebView.evaluateJavascript(YouTubeWebHelper.ANTI_BACKGROUND_PAUSE_SCRIPT, null)
+                carWebView.evaluateJavascript(YouTubeWebHelper.AD_AND_PROMO_SUPPRESSION_SCRIPT, null)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -130,6 +155,14 @@ class KiaCarPresentation(
             togglePlayPause()
         }
 
+        btnCarPrevious.setOnClickListener {
+            previousVideo()
+        }
+
+        btnCarNext.setOnClickListener {
+            nextVideo()
+        }
+
         btnCarRewind5.setOnClickListener {
             seekBackward()
         }
@@ -145,6 +178,14 @@ class KiaCarPresentation(
 
     fun loadUrl(url: String) {
         carWebView.loadUrl(url)
+    }
+
+    fun nextVideo() {
+        carWebView.evaluateJavascript(YouTubeWebHelper.NEXT_TRACK_SCRIPT, null)
+    }
+
+    fun previousVideo() {
+        carWebView.evaluateJavascript(YouTubeWebHelper.PREV_TRACK_SCRIPT, null)
     }
 
     fun seekForward(seconds: Int = SettingsManager.getInstance(context).seekInterval) {
