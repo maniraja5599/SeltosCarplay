@@ -160,14 +160,20 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
+        val cookieManager = android.webkit.CookieManager.getInstance()
+        cookieManager.setAcceptCookie(true)
+        cookieManager.setAcceptThirdPartyCookies(binding.mainWebView, true)
+
         val webSettings = binding.mainWebView.settings
         webSettings.javaScriptEnabled = true
         webSettings.domStorageEnabled = true
+        webSettings.databaseEnabled = true
+        webSettings.setSupportMultipleWindows(false)
+        webSettings.javaScriptCanOpenWindowsAutomatically = true
         webSettings.mediaPlaybackRequiresUserGesture = false
         webSettings.allowFileAccess = true
         webSettings.loadWithOverviewMode = true
         webSettings.useWideViewPort = true
-        webSettings.databaseEnabled = true
 
         applyDesktopMode(settingsManager.isDesktopMode)
         binding.mainWebView.addJavascriptInterface(KiaMediaBridge(), "KiaMediaBridge")
@@ -686,8 +692,8 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
     }
 
     private fun applyDesktopMode(isDesktop: Boolean) {
-        val desktopUA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        binding.mainWebView.settings.userAgentString = if (isDesktop) desktopUA else null
+        binding.mainWebView.settings.userAgentString =
+            if (isDesktop) YouTubeWebHelper.CHROME_DESKTOP_UA else YouTubeWebHelper.CHROME_MOBILE_UA
     }
 
     private fun updatePlayPauseButtonUi(isPlaying: Boolean) {

@@ -9,11 +9,29 @@ object YouTubeWebHelper {
     }
 
     /**
+     * Authentic Chrome User-Agents without 'Version/4.0' or 'wv' so Google Sign-in / OAuth works 100%
+     */
+    const val CHROME_MOBILE_UA = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36"
+    const val CHROME_DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+
+    /**
      * Checks if a network request URL is an ad network or tracking endpoint
      */
     fun isAdUrl(url: String?): Boolean {
         if (url == null) return false
         val lower = url.lowercase()
+
+        // NEVER intercept Google login or authentication endpoints
+        if (lower.contains("accounts.google.") ||
+            lower.contains("myaccount.google.") ||
+            lower.contains("/signin") ||
+            lower.contains("/oauth") ||
+            lower.contains("google.com/accounts") ||
+            lower.contains("gstatic.com")
+        ) {
+            return false
+        }
+
         return lower.contains("googleads.g.doubleclick.net") ||
                 lower.contains("pubads.g.doubleclick.net") ||
                 lower.contains("pagead2.googlesyndication.com") ||

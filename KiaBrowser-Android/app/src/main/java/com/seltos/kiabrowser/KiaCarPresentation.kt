@@ -68,19 +68,24 @@ class KiaCarPresentation(
     }
 
     private fun setupWebView() {
+        val cookieManager = android.webkit.CookieManager.getInstance()
+        cookieManager.setAcceptCookie(true)
+        cookieManager.setAcceptThirdPartyCookies(carWebView, true)
+
         val settings = carWebView.settings
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
+        settings.databaseEnabled = true
+        settings.setSupportMultipleWindows(false)
+        settings.javaScriptCanOpenWindowsAutomatically = true
         settings.mediaPlaybackRequiresUserGesture = false
         settings.allowFileAccess = true
         settings.loadWithOverviewMode = true
         settings.useWideViewPort = true
-        settings.databaseEnabled = true
 
         val isDesktop = SettingsManager.getInstance(context).isDesktopMode
-        if (isDesktop) {
-            settings.userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        }
+        settings.userAgentString =
+            if (isDesktop) YouTubeWebHelper.CHROME_DESKTOP_UA else YouTubeWebHelper.CHROME_MOBILE_UA
 
         // Inject anti-pause and ad-block at document start before YouTube page scripts execute
         if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
