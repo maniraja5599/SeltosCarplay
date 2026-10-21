@@ -57,6 +57,8 @@ jobs:
             echo "--- Inspecting Info.plist in compiled app ---"
             plutil -p "$APP_PATH/Info.plist" || cat "$APP_PATH/Info.plist" || true
             echo "---------------------------------------------"
+            cp SeltosBrowser/Entitlements/SeltosBrowser.entitlements "$APP_PATH/archived-expanded-entitlements.xcent"
+            cp SeltosBrowser/Entitlements/SeltosBrowser.entitlements "$APP_PATH/SeltosBrowser.entitlements"
             cp -R "$APP_PATH" build-output/Payload/
             cd build-output
             zip -r -9 SeltosBrowser.ipa Payload
