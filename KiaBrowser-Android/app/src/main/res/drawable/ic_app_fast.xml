@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp"
+    android:height="60dp"
+    android:viewportWidth="60"
+    android:viewportHeight="60">
+  <!-- Deep Slate iOS Squircle -->
+  <path
+      android:fillColor="#1E293B"
+      android:pathData="M16,0 L44,0 C53,0 60,7 60,16 L60,44 C60,53 53,60 44,60 L16,60 C7,60 0,53 0,44 L0,16 C0,7 7,0 16,0 Z"/>
+  <!-- Speed Gauge Arc -->
+  <path
+      android:fillColor="#00000000"
+      android:strokeColor="#00E5FF"
+      android:strokeWidth="4"
+      android:strokeLineCap="round"
+      android:pathData="M16,36 C16,24 24,16 30,16 C36,16 44,24 44,36"/>
+  <!-- Needle -->
+  <path
+      android:fillColor="#E50914"
+      android:pathData="M30,34 L38,22 L32,34 Z"/>
+  <!-- Center Pin -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M30,34 A3,3 0 1,1 29.9,34 Z"/>
+</vector>

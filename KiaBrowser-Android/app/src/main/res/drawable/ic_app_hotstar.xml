@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp"
+    android:height="60dp"
+    android:viewportWidth="60"
+    android:viewportHeight="60">
+  <!-- Deep Blue Navy iOS Squircle -->
+  <path
+      android:fillColor="#0B1426"
+      android:pathData="M16,0 L44,0 C53,0 60,7 60,16 L60,44 C60,53 53,60 44,60 L16,60 C7,60 0,53 0,44 L0,16 C0,7 7,0 16,0 Z"/>
+  <!-- Disney/Hotstar Blue Arc -->
+  <path
+      android:fillColor="#0063E5"
+      android:pathData="M12,46 C18,20 42,16 50,22 C46,24 24,24 16,46 Z"/>
+  <!-- Golden Disney+ Star -->
+  <path
+      android:fillColor="#00D2F4"
+      android:pathData="M30,16 L32.5,24.5 L41,27 L32.5,29.5 L30,38 L27.5,29.5 L19,27 L27.5,24.5 Z"/>
+  <!-- Inner Star Core -->
+  <path
+      android:fillColor="#FFCC00"
+      android:pathData="M30,22 L31.5,25.5 L35,27 L31.5,28.5 L30,32 L28.5,28.5 L25,27 L28.5,25.5 Z"/>
+</vector>

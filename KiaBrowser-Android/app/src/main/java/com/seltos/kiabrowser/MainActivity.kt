@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
     private var lastMediaTitle = "Kia Browser"
     private var isPlayingMedia = false
     private var isFullscreen = false
+    private var lastLoadedUrl: String? = null
 
     private val speechRecognizerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -394,11 +395,6 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             ).show()
         }
 
-        binding.btnHomeAdBlock.setOnClickListener {
-            val newMode = !settingsManager.isAdBlockEnabled
-            binding.switchAdBlock.isChecked = newMode
-        }
-
         // Desktop Mode Switch
         binding.switchDesktop.isChecked = settingsManager.isDesktopMode
         updateDesktopUi(settingsManager.isDesktopMode)
@@ -413,11 +409,6 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             ).show()
         }
 
-        binding.btnHomeDesktop.setOnClickListener {
-            val newMode = !settingsManager.isDesktopMode
-            binding.switchDesktop.isChecked = newMode
-        }
-
         // Clear Cache
         val clearCacheAction = {
             binding.mainWebView.clearCache(true)
@@ -427,11 +418,38 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
             Toast.makeText(this, "Browser Cache & Data Cleared!", Toast.LENGTH_SHORT).show()
         }
         binding.btnClearCacheAction.setOnClickListener { clearCacheAction() }
-        binding.btnHomeClearCache.setOnClickListener { clearCacheAction() }
 
         // Voice Search from Home Bottom Bar
         binding.btnHomeVoiceSearch.setOnClickListener {
             startVoiceSearch()
+        }
+
+        // Home Bottom Bar: Home
+        binding.btnHomeHome.setOnClickListener {
+            showHome()
+        }
+
+        // Home Bottom Bar: Now Playing (Resumes active playback in place)
+        binding.btnHomeNowPlaying.setOnClickListener {
+            showWeb()
+        }
+
+        // Floating Now Playing Banner Actions
+        binding.layoutNowPlayingBanner.setOnClickListener {
+            showWeb()
+        }
+        binding.btnBannerResume.setOnClickListener {
+            showWeb()
+        }
+        binding.btnBannerPlayPause.setOnClickListener {
+            if (isPlayingMedia) onMediaPause() else onMediaPlay()
+        }
+
+        // Home Bottom Bar: Settings (Scrolls down to settings card)
+        binding.btnHomeSettings.setOnClickListener {
+            binding.homeFavoritesView.post {
+                binding.homeFavoritesView.smoothScrollTo(0, binding.homeFavoritesView.getChildAt(0).height)
+            }
         }
     }
 
@@ -455,16 +473,12 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
 
     private fun updateAdBlockUi(enabled: Boolean) {
         val color = if (enabled) getColor(R.color.accent) else getColor(R.color.text_secondary)
-        binding.ivHomeAdBlock.setColorFilter(color)
         binding.btnToggleAdBlock.setColorFilter(color)
-        binding.tvHomeAdBlock.text = if (enabled) "AdBlock: ON" else "AdBlock: OFF"
         binding.tvAdBlockStatusDesc.text = if (enabled) "Block and skip all video and banner ads (Active)" else "Ad blocking disabled"
     }
 
     private fun updateDesktopUi(enabled: Boolean) {
         val color = if (enabled) getColor(R.color.accent) else getColor(R.color.text_secondary)
-        binding.ivHomeDesktop.setColorFilter(color)
-        binding.tvHomeDesktop.setTextColor(color)
         binding.btnToggleDesktop.setColorFilter(color)
     }
 
@@ -477,11 +491,44 @@ class MainActivity : AppCompatActivity(), MediaControlListener, KiaPlaybackServi
         // Hide player controls, show home controls
         binding.mediaControlsGroup.visibility = View.GONE
         binding.homeControlsGroup.visibility = View.VISIBLE
+
+        // Check if there is an active media session to display "Now Playing"
+        val hasActiveMedia = !lastLoadedUrl.isNullOrBlank()
+        binding.layoutNowPlayingBanner.visibility = if (hasActiveMedia) View.VISIBLE else View.GONE
+        if (hasActiveMedia) {
+            binding.tvBannerNowPlayingTitle.text = lastMediaTitle
+            binding.btnBannerPlayPause.setImageResource(
+                if (isPlayingMedia) R.drawable.ic_pause else R.drawable.ic_play
+            )
+            binding.ivHomeNowPlaying.setColorFilter(getColor(R.color.accent))
+            binding.tvHomeNowPlaying.setTextColor(getColor(R.color.accent))
+        } else {
+            binding.ivHomeNowPlaying.setColorFilter(getColor(R.color.text_secondary))
+            binding.tvHomeNowPlaying.setTextColor(getColor(R.color.text_secondary))
+        }
+    }
+
+    private fun showWeb() {
+        if (!lastLoadedUrl.isNullOrBlank()) {
+            isHome = false
+            binding.homeFavoritesView.visibility = View.GONE
+            binding.layoutNowPlayingBanner.visibility = View.GONE
+            binding.mainWebView.visibility = View.VISIBLE
+
+            // Show player controls, hide home controls
+            binding.mediaControlsGroup.visibility = View.VISIBLE
+            binding.homeControlsGroup.visibility = View.GONE
+            binding.mediaControlsGroup.post { binding.mediaControlsGroup.scrollTo(0, 0) }
+        } else {
+            loadUrl("https://m.youtube.com")
+        }
     }
 
     private fun loadUrl(url: String) {
+        lastLoadedUrl = url
         isHome = false
         binding.homeFavoritesView.visibility = View.GONE
+        binding.layoutNowPlayingBanner.visibility = View.GONE
         binding.mainWebView.visibility = View.VISIBLE
         binding.mainWebView.loadUrl(url)
 

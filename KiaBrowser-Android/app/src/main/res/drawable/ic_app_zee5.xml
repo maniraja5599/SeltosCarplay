@@ -1,0 +1,20 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp"
+    android:height="60dp"
+    android:viewportWidth="60"
+    android:viewportHeight="60">
+  <!-- Deep Violet Purple iOS Squircle -->
+  <path
+      android:fillColor="#8230C6"
+      android:pathData="M16,0 L44,0 C53,0 60,7 60,16 L60,44 C60,53 53,60 44,60 L16,60 C7,60 0,53 0,44 L0,16 C0,7 7,0 16,0 Z"/>
+  <!-- Circular Accent Ring -->
+  <path
+      android:fillColor="#00000000"
+      android:strokeColor="#FFFFFF"
+      android:strokeWidth="3.5"
+      android:pathData="M30,14 A16,16 0 1,1 29.9,14 Z"/>
+  <!-- White Modern 'Z' -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M23,22 L37,22 L27,34 L37,34 L37,38 L23,38 L33,26 L23,26 Z"/>
+</vector>

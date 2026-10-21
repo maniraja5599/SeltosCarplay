@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp"
+    android:height="60dp"
+    android:viewportWidth="60"
+    android:viewportHeight="60">
+  <!-- Spotify Green iOS Squircle -->
+  <path
+      android:fillColor="#1DB954"
+      android:pathData="M16,0 L44,0 C53,0 60,7 60,16 L60,44 C60,53 53,60 44,60 L16,60 C7,60 0,53 0,44 L0,16 C0,7 7,0 16,0 Z"/>
+  <!-- Top Sound Wave -->
+  <path
+      android:fillColor="#121212"
+      android:pathData="M16,23 C26,19 37,20 45,25 C46,26 46,27 45,28 C44,29 42,29 41,28 C34,24 25,23 17,26 C15,27 14,26 14,25 C14,24 15,23 16,23 Z"/>
+  <!-- Middle Sound Wave -->
+  <path
+      android:fillColor="#121212"
+      android:pathData="M18,31 C26,28 35,29 42,33 C43,34 43,35 42,36 C41,37 39,37 38,36 C32,32 25,32 19,34 C18,35 16,34 16,33 C16,32 17,31 18,31 Z"/>
+  <!-- Bottom Sound Wave -->
+  <path
+      android:fillColor="#121212"
+      android:pathData="M20,39 C26,37 33,37 39,40 C40,41 40,42 39,43 C38,44 37,44 36,43 C31,40 25,40 21,42 C20,43 19,42 19,41 C19,40 20,39 20,39 Z"/>
+</vector>
