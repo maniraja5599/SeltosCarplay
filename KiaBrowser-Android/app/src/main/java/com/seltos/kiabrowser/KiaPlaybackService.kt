@@ -17,6 +17,7 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.media.MediaBrowserServiceCompat
 
@@ -24,11 +25,12 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
 
     private var wakeLock: PowerManager.WakeLock? = null
     private var isPlaying = false
-    private var currentTitle = "Kia Browser"
+    private var currentTitle = "YouTube & Media"
     private var audioManager: AudioManager? = null
     private var audioFocusRequest: AudioFocusRequest? = null
 
     companion object {
+        const val TAG = "KiaPlaybackService"
         const val CHANNEL_ID = "kia_browser_playback_channel"
         const val NOTIFICATION_ID = 1001
 
@@ -86,6 +88,7 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.d(TAG, "onCreate initialized")
         instance = this
         createNotificationChannel()
         acquireWakeLock()
@@ -95,14 +98,48 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
 
     private fun setupMediaSession() {
         if (mediaSessionInstance == null) {
+            Log.d(TAG, "Setting up MediaSessionCompat")
             mediaSessionInstance = MediaSessionCompat(this, "KiaBrowserMediaSession").apply {
                 setFlags(
                     MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
                     MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
                 )
 
+                val queue = listOf(
+                    MediaSessionCompat.QueueItem(buildMediaDescription(MEDIA_ID_YOUTUBE, "YouTube & Media", "Browser Live"), 1),
+                    MediaSessionCompat.QueueItem(buildMediaDescription(MEDIA_ID_CRICKET, "Live Cricket Score", "Cricket Hub"), 2),
+                    MediaSessionCompat.QueueItem(buildMediaDescription(MEDIA_ID_HOTSTAR, "Hotstar & Apps", "Web Video"), 3)
+                )
+                setQueue(queue)
+
                 setCallback(object : MediaSessionCompat.Callback() {
+                    override fun onPrepare() {
+                        Log.d(TAG, "MediaSession onPrepare")
+                        onPlay()
+                    }
+
+                    override fun onPrepareFromMediaId(mediaId: String?, extras: Bundle?) {
+                        Log.d(TAG, "MediaSession onPrepareFromMediaId: $mediaId")
+                        onPlayFromMediaId(mediaId, extras)
+                    }
+
+                    override fun onPlayFromSearch(query: String?, extras: Bundle?) {
+                        Log.d(TAG, "MediaSession onPlayFromSearch: $query")
+                        onPlayFromMediaId(MEDIA_ID_YOUTUBE, extras)
+                    }
+
+                    override fun onSkipToQueueItem(queueId: Long) {
+                        Log.d(TAG, "MediaSession onSkipToQueueItem: $queueId")
+                        val mediaId = when (queueId) {
+                            2L -> MEDIA_ID_CRICKET
+                            3L -> MEDIA_ID_HOTSTAR
+                            else -> MEDIA_ID_YOUTUBE
+                        }
+                        onPlayFromMediaId(mediaId, null)
+                    }
+
                     override fun onPlay() {
+                        Log.d(TAG, "MediaSession onPlay")
                         isPlaying = true
                         activeCallback?.onServicePlayPause()
                         updatePlaybackState(true, 0)
@@ -110,6 +147,7 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
                     }
 
                     override fun onPause() {
+                        Log.d(TAG, "MediaSession onPause")
                         isPlaying = false
                         activeCallback?.onServicePlayPause()
                         updatePlaybackState(false, 0)
@@ -117,10 +155,12 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
                     }
 
                     override fun onSkipToNext() {
+                        Log.d(TAG, "MediaSession onSkipToNext")
                         activeCallback?.onServiceNext()
                     }
 
                     override fun onSkipToPrevious() {
+                        Log.d(TAG, "MediaSession onSkipToPrevious")
                         activeCallback?.onServicePrevious()
                     }
 
@@ -135,6 +175,7 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
                     }
 
                     override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+                        Log.d(TAG, "MediaSession onPlayFromMediaId: $mediaId")
                         val selectedId = mediaId ?: MEDIA_ID_YOUTUBE
                         val title = when (selectedId) {
                             MEDIA_ID_CRICKET -> "Live Cricket Center"
@@ -166,7 +207,9 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
                                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
                             }
                             startActivity(intent)
-                        } catch (_: Exception) {}
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to start MainActivity from service", e)
+                        }
 
                         activeCallback?.onServicePlayPause()
                     }
@@ -174,6 +217,10 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
 
                 isActive = true
             }
+
+            // Pre-populate session immediately so Android Auto never sees null PlaybackState
+            updateMetadata("YouTube & Media", "Kia Browser Live", -1L, MEDIA_ID_YOUTUBE)
+            updatePlaybackState(true, 0)
         }
 
         sessionToken = mediaSessionInstance?.sessionToken
@@ -184,28 +231,45 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot {
-        return BrowserRoot(MEDIA_ROOT_ID, null)
+        Log.d(TAG, "onGetRoot called by $clientPackageName (uid: $clientUid)")
+        val extras = Bundle().apply {
+            putBoolean("android.media.browse.SEARCH_SUPPORTED", true)
+            putBoolean("android.media.browse.CONTENT_STYLE_SUPPORTED", true)
+            putInt("android.media.browse.CONTENT_STYLE_BROWSABLE_HINT", 1)
+            putInt("android.media.browse.CONTENT_STYLE_PLAYABLE_HINT", 1)
+        }
+        return BrowserRoot(MEDIA_ROOT_ID, extras)
     }
 
     override fun onLoadChildren(
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
+        Log.d(TAG, "onLoadChildren for parentId: $parentId")
         val items = mutableListOf<MediaBrowserCompat.MediaItem>()
         if (parentId == MEDIA_ROOT_ID) {
             items.add(buildMediaItem(MEDIA_ID_YOUTUBE, "YouTube & Media", "Resume active browser playback"))
             items.add(buildMediaItem(MEDIA_ID_CRICKET, "Live Cricket Score", "Live match commentary & scores"))
-            items.add(buildMediaItem(MEDIA_ID_HOTSTAR, "Hotstar & Apps", "Stream web video"))
+            items.add(buildMediaItem(MEDIA_ID_HOTSTAR, "Hotstar & Apps", "Stream web video directly"))
+        } else {
+            items.add(buildMediaItem(MEDIA_ID_YOUTUBE, "YouTube & Media", "Resume active browser playback"))
         }
         result.sendResult(items)
     }
 
-    private fun buildMediaItem(id: String, title: String, subtitle: String): MediaBrowserCompat.MediaItem {
-        val desc = MediaDescriptionCompat.Builder()
+    private fun buildMediaDescription(id: String, title: String, subtitle: String): MediaDescriptionCompat {
+        val iconUri = Uri.parse("android.resource://${packageName}/drawable/app_logo")
+        return MediaDescriptionCompat.Builder()
             .setMediaId(id)
             .setTitle(title)
             .setSubtitle(subtitle)
+            .setDescription(subtitle)
+            .setIconUri(iconUri)
             .build()
+    }
+
+    private fun buildMediaItem(id: String, title: String, subtitle: String): MediaBrowserCompat.MediaItem {
+        val desc = buildMediaDescription(id, title, subtitle)
         return MediaBrowserCompat.MediaItem(desc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE)
     }
 
@@ -362,6 +426,11 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
             .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setStyle(
+                androidx.media.app.NotificationCompat.MediaStyle()
+                    .setMediaSession(mediaSessionInstance?.sessionToken)
+                    .setShowActionsInCompactView(0, 1, 2)
+            )
             .addAction(R.drawable.ic_replay_5, "-${step}s", rewindIntent)
             .addAction(
                 if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
