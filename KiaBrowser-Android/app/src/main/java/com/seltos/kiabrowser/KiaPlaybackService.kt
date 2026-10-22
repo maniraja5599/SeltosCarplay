@@ -135,22 +135,40 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
                     }
 
                     override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-                        when (mediaId) {
-                            MEDIA_ID_CRICKET -> {
-                                val intent = Intent(this@KiaPlaybackService, MainActivity::class.java).apply {
-                                    data = Uri.parse("file:///android_asset/cricket_hub.html?match=0")
-                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                                }
-                                startActivity(intent)
-                            }
-                            else -> {
-                                val intent = Intent(this@KiaPlaybackService, MainActivity::class.java).apply {
-                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                                }
-                                startActivity(intent)
-                            }
+                        val selectedId = mediaId ?: MEDIA_ID_YOUTUBE
+                        val title = when (selectedId) {
+                            MEDIA_ID_CRICKET -> "Live Cricket Center"
+                            MEDIA_ID_HOTSTAR -> "Hotstar Streaming"
+                            else -> "YouTube & Media"
                         }
-                        onPlay()
+                        val targetUrl = when (selectedId) {
+                            MEDIA_ID_CRICKET -> "file:///android_asset/cricket_hub.html?match=0"
+                            MEDIA_ID_HOTSTAR -> "https://www.hotstar.com/in"
+                            else -> "https://m.youtube.com"
+                        }
+
+                        currentTitle = title
+                        isPlaying = true
+
+                        // 1. Immediately update metadata so Android Auto displays player HUD without error
+                        updateMetadata(title, "Kia Browser", -1L, selectedId)
+
+                        // 2. Transition state to PLAYING
+                        updatePlaybackState(true, 0)
+
+                        // 3. Keep foreground service alive with notification
+                        startForegroundWithNotification()
+
+                        // 4. Trigger MainActivity to load the target URL
+                        try {
+                            val intent = Intent(this@KiaPlaybackService, MainActivity::class.java).apply {
+                                data = Uri.parse(targetUrl)
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            }
+                            startActivity(intent)
+                        } catch (_: Exception) {}
+
+                        activeCallback?.onServicePlayPause()
                     }
                 })
 
@@ -212,15 +230,34 @@ class KiaPlaybackService : MediaBrowserServiceCompat() {
         mediaSessionInstance?.setPlaybackState(playbackState)
     }
 
-    fun updateMetadata(title: String, artist: String = "Kia Browser", durationMs: Long = 0) {
+    fun updateMetadata(
+        title: String,
+        artist: String = "Kia Browser",
+        durationMs: Long = -1L,
+        mediaId: String = MEDIA_ID_YOUTUBE
+    ) {
         currentTitle = title
-        val metadata = MediaMetadataCompat.Builder()
-            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
-            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
-            .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durationMs)
-            .build()
+        val artBitmap = try {
+            android.graphics.BitmapFactory.decodeResource(resources, R.drawable.app_logo)
+        } catch (_: Exception) {
+            null
+        }
 
-        mediaSessionInstance?.setMetadata(metadata)
+        val builder = MediaMetadataCompat.Builder()
+            .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, mediaId)
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, title)
+            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, artist)
+            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, "Kia Seltos Infotainment")
+            .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durationMs)
+
+        if (artBitmap != null) {
+            builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, artBitmap)
+            builder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, artBitmap)
+        }
+
+        mediaSessionInstance?.setMetadata(builder.build())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
